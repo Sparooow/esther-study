@@ -167,6 +167,14 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 .exam-result .big-score{font-size:2.6rem;font-weight:700;color:var(--success)}
 .subj-btn:hover{opacity:0.85}
 .subj-divider{width:1px;height:20px;background:var(--border);margin:0 4px}
+.exam-switcher{display:flex;gap:4px;background:var(--primary-light);border-radius:22px;padding:3px}
+.exam-btn{padding:5px 13px;border-radius:20px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:0.82rem;font-family:'Inter',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap}
+.exam-btn.active{background:var(--primary);color:#fff;box-shadow:0 1px 4px rgba(212,83,126,0.3)}
+.exam2-empty{text-align:center}
+.exam2-empty .big{font-size:3rem;margin-bottom:12px}
+.exam2-empty h2{font-size:1.4rem;margin-bottom:10px}
+.exam2-empty p{color:var(--muted);line-height:1.7;margin-bottom:8px}
+.exam2-empty .hintbox{margin-top:22px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:18px 20px;text-align:left;font-size:0.9rem;color:var(--text)}
 /* ── OmI accents */
 .omi-tab-active{color:#E07020!important;border-bottom-color:#E07020!important}
 /* ── Home / dashboard */
@@ -227,8 +235,13 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 <header>
   <div><span class="logo">MAC</span><span class="logo-sub" id="logoSub">Oefeningen</span></div>
   <div class="header-right">
+    <div class="exam-switcher" id="examSwitcher">
+      <button class="exam-btn active" data-exam="1" onclick="switchExam(1)">📕 Exam 1</button>
+      <button class="exam-btn" data-exam="2" onclick="switchExam(2)">📗 Exam 2</button>
+    </div>
+    <div class="subj-divider"></div>
     <button class="btn-cheatsheet" id="btnCS" onclick="toggleCS()">📋 Formulekaart</button>
-    <div class="subj-switcher">
+    <div class="subj-switcher" id="subjSwitcher">
       <button class="subj-btn active" data-subj="home" onclick="switchSubject('home')">🏠</button>
       <button class="subj-btn" data-subj="mac" onclick="switchSubject('mac')">MAC</button>
       <button class="subj-btn" data-subj="omi" onclick="switchSubject('omi')">📘 OmI</button>
@@ -246,7 +259,7 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
     <button class="lang-btn" id="darkBtn" onclick="toggleDark()" title="Mode sombre">🌙</button>
   </div>
 </header>
-<div class="global-progress">
+<div class="global-progress" id="globalProgress">
   <span id="gpLabel">correct beantwoord</span>
   <div class="global-bar"><div class="global-fill" id="globalFill"></div></div>
   <span id="gpCount">0/43</span>
@@ -286,6 +299,10 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
   <div class="tabs" id="testTabsRow"></div>
 </div>
 <main id="testArea" style="max-width:900px;margin:0 auto;padding:32px 20px"></main>
+</div>
+<!-- Exam 2 placeholder -->
+<div id="exam2Wrap" style="display:none">
+  <main id="exam2Area" style="max-width:760px;margin:0 auto;padding:48px 20px"></main>
 </div>
 <!-- Theory-only revision space -->
 <div id="theoryWrap" style="display:none">
@@ -1694,6 +1711,9 @@ function setLang(l){
     buildLvlUI();
     updateLvlProgress();
   }
+  if(currentExam===2){ buildExam2(); return; }
+  if(currentSubject==='home') buildHome();
+  if(currentSubject==='theory') buildTheoryUI();
 }
 
 function toggleCS(){
@@ -3054,6 +3074,7 @@ function switchSubject(s){
   document.getElementById('testWrap').style.display = s==='test' ? '' : 'none';
   document.getElementById('lvlWrap').style.display = s==='lvl' ? '' : 'none';
   document.getElementById('theoryWrap').style.display = s==='theory' ? '' : 'none';
+  const e2=document.getElementById('exam2Wrap'); if(e2) e2.style.display='none';
   document.getElementById('langSwitcher').style.display = '';
   document.getElementById('btnCS').style.display = s==='mac' ? '' : 'none';
   document.querySelectorAll('.subj-btn').forEach(b => b.classList.toggle('active', b.dataset.subj===s));
@@ -3073,6 +3094,62 @@ function switchSubject(s){
   } else {
     updateProgress();
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Exam switcher — Exam 1 (MAC+OmI, current content) vs Exam 2 (new subjects)
+// ═══════════════════════════════════════════════════════════════════
+let currentExam = parseInt(localStorage.getItem('esther_exam')||'1',10);
+
+function switchExam(n){
+  currentExam = n;
+  localStorage.setItem('esther_exam', String(n));
+  document.querySelectorAll('.exam-btn').forEach(b=>b.classList.toggle('active', +b.dataset.exam===n));
+  const ex1 = n===1;
+  // exam-1 chrome
+  document.getElementById('subjSwitcher').style.display = ex1 ? '' : 'none';
+  const gp=document.getElementById('globalProgress'); if(gp) gp.style.display = ex1 ? '' : 'none';
+  // exam-2 placeholder
+  document.getElementById('exam2Wrap').style.display = ex1 ? 'none' : '';
+  if(ex1){
+    switchSubject('home');
+  } else {
+    ['homeWrap','macWrap','omiWrap','testWrap','lvlWrap','theoryWrap'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.style.display='none';
+    });
+    document.getElementById('btnCS').style.display='none';
+    buildExam2();
+  }
+}
+
+function buildExam2(){
+  const L = lang==='fr' ? {
+      t:'Examen 2', h:'Pas encore de contenu ici',
+      p1:'Cet espace est prêt à accueillir les matières de ton deuxième examen.',
+      p2:'Envoie tes supports et je créerai la théorie et les exercices, exactement comme pour l\'examen 1.',
+      box:'📎 Ce que tu peux m\'envoyer :',
+      li:['Tes PowerPoints de cours (.pptx)','Des photos de ton livre / syllabus','Des exercices ou anciens examens','Une simple description des chapitres']
+    } : lang==='en' ? {
+      t:'Exam 2', h:'No content here yet',
+      p1:'This space is ready to host the subjects of your second exam.',
+      p2:'Send your materials and I\'ll create the theory and exercises, just like for exam 1.',
+      box:'📎 What you can send:',
+      li:['Your course PowerPoints (.pptx)','Photos of your book / syllabus','Exercises or past exams','A simple description of the chapters']
+    } : {
+      t:'Examen 2', h:'Nog geen inhoud hier',
+      p1:'Deze ruimte staat klaar voor de vakken van je tweede examen.',
+      p2:'Stuur je materiaal en ik maak de theorie en oefeningen, net als voor examen 1.',
+      box:'📎 Wat je kan sturen:',
+      li:['Je cursus-PowerPoints (.pptx)','Foto\'s van je boek / syllabus','Oefeningen of oude examens','Een korte beschrijving van de hoofdstukken']
+    };
+  document.getElementById('exam2Area').innerHTML = `
+<div class="exam2-empty">
+  <div class="big">📗</div>
+  <h2>${L.h}</h2>
+  <p>${L.p1}</p>
+  <p>${L.p2}</p>
+  <div class="hintbox"><strong>${L.box}</strong><ul style="margin:10px 0 0 18px;line-height:1.9">${L.li.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4011,6 +4088,7 @@ getExercises = function(){
 // Init
 buildUI();
 switchSubject('home');
+if(currentExam===2) switchExam(2); else switchExam(1);
 updateSyncBtn();
 if(localStorage.getItem('esther_dark')==='1'){ const b=document.getElementById('darkBtn'); if(b) b.textContent='☀️'; }
 if(syncCode) syncPull().then(()=>{ if(currentSubject==='home') buildHome(); });
