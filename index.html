@@ -218,6 +218,7 @@ nl:{
   cheatsheet_btn:'📋 Formulekaart', progress_label:'correct beantwoord',
   boss:'BOSS', check:'Controleer', show_sol:'Toon oplossing', hide_sol:'Verberg oplossing',
   reset:'Reset', correct_msg:'✓ Correct!', wrong_msg:'✗ Niet correct, probeer opnieuw.',
+  encouragements:['🎉 Uitstekend! Je hebt het!','💪 Perfect, zo ga je door!','⭐ Bravo! Je snapt het helemaal!','🚀 Geweldig werk!','✨ Super! Je bent op de goede weg!','🏆 Topprestatie!','🔥 Wauw, perfect!','💡 Exact goed! Je begrijpt het!'],
   theory:'📚 Theorie & Formules', close:'Sluit',
   tabs:['W1: Afschrijvingen','W2: Absorption Costing','W3: Direct Costing','W4: Kostenverbijzondering','W5: Break-even & Verschillen','W6: Gemengde oefeningen'],
   w_sub:['Waardedaling van vaste activa','Kosten per eenheid inclusief vaste kosten','Kosten per eenheid exclusief vaste kosten','Kostentoerekening aan producten','Omslagpunt en prestatieverschillen','Combineer kennis van meerdere workshops'],
@@ -323,6 +324,7 @@ en:{
   cheatsheet_btn:'📋 Cheat Sheet', progress_label:'correct answers',
   boss:'BOSS', check:'Check', show_sol:'Show solution', hide_sol:'Hide solution',
   reset:'Reset', correct_msg:'✓ Correct!', wrong_msg:'✗ Not correct, try again.',
+  encouragements:['🎉 Excellent! You got it!','💪 Perfect, keep going!','⭐ Brilliant! You really understand this!','🚀 Amazing work!','✨ Super! You\'re on the right track!','🏆 Top performance!','🔥 Wow, perfect!','💡 Spot on! You\'ve got it!'],
   theory:'📚 Theory & Formulas', close:'Close',
   tabs:['W1: Depreciation','W2: Absorption Costing','W3: Direct Costing','W4: Cost Allocation','W5: Break-even & Variance','W6: Mixed exercises'],
   w_sub:['Decrease in value of fixed assets','Cost per unit including fixed costs','Cost per unit excluding fixed costs','Allocating costs to products','Break-even point and performance variances','Combine knowledge from multiple workshops'],
@@ -428,6 +430,7 @@ fr:{
   cheatsheet_btn:'📋 Aide-mémoire', progress_label:'réponses correctes',
   boss:'BOSS', check:'Vérifier', show_sol:'Voir solution', hide_sol:'Cacher solution',
   reset:'Réinitialiser', correct_msg:'✓ Correct !', wrong_msg:'✗ Incorrect, réessayez.',
+  encouragements:['🎉 Excellent ! Tu as trouvé !','💪 Parfait, continue comme ça !','⭐ Bravo ! Tu comprends vraiment bien !','🚀 Super boulot !','✨ Génial ! Tu es sur la bonne voie !','🏆 Performance de champion !','🔥 Wow, impeccable !','💡 Exactement ! Tu maîtrises !'],
   theory:'📚 Théorie & Formules', close:'Fermer',
   tabs:['W1: Amortissements','W2: Coûts complets','W3: Coûts variables','W4: Affectation des coûts','W5: Seuil de rentabilité','W6: Exercices mixtes'],
   w_sub:["Dépréciation des immobilisations","Coût unitaire incluant les coûts fixes","Coût unitaire hors coûts fixes","Répartition des coûts aux produits","Seuil de rentabilité et analyse des écarts","Combinez les connaissances de plusieurs ateliers"],
@@ -1387,7 +1390,7 @@ function buildExCard(ex, t){
   // Restore correct feedback
   if(correctSet.has(ex.id)){
     const fb = card.querySelector('#fb_'+ex.id);
-    if(fb){fb.textContent=t.correct_msg;fb.className='feedback show ok';}
+    if(fb){const enc=t.encouragements;fb.textContent=enc[Math.floor(Math.random()*enc.length)];fb.className='feedback show ok';}
   }
 
   return card;
@@ -1400,7 +1403,7 @@ function restoreStates(){
     if(card){
       card.classList.add('correct');
       const fb = card.querySelector('#fb_'+id);
-      if(fb){fb.textContent=T[lang].correct_msg;fb.className='feedback show ok';}
+      if(fb){const enc=T[lang].encouragements;fb.textContent=enc[Math.floor(Math.random()*enc.length)];fb.className='feedback show ok';}
     }
   });
 }
@@ -1532,7 +1535,7 @@ function checkEx(exId){
   // Feedback
   const fb = document.getElementById('fb_'+exId);
   if(fb){
-    fb.textContent = allOk ? t.correct_msg : t.wrong_msg;
+    const enc = t.encouragements; fb.textContent = allOk ? enc[Math.floor(Math.random()*enc.length)] : t.wrong_msg;
     fb.className = 'feedback show ' + (allOk?'ok':'bad');
   }
   if(card){card.classList.toggle('correct',allOk);card.classList.toggle('wrong',!allOk);}
@@ -3285,10 +3288,14 @@ function omiEx(ex, field){
   return ex[key] !== undefined ? ex[key] : (ex[field + '_nl'] !== undefined ? ex[field + '_nl'] : ex[field] || '');
 }
 
+function randEncouragement(){
+  const enc = T[lang].encouragements;
+  return enc[Math.floor(Math.random()*enc.length)];
+}
 function omiLabels(){
-  if(lang==='fr') return {theory:'Théorie',understand:'Compréhension & Intuition — Exemples concrets',exLabel:'Exercice',check:'Vérifier',show:'Voir la solution',reset:'Réinitialiser',chooseAnswer:'Choisissez une réponse !',correct:'✓ Correct !',wrong:'✗ Pas correct — la bonne réponse est indiquée en vert.',score:' exercices corrects'};
-  if(lang==='en') return {theory:'Theory',understand:'Understanding & Intuition — Concrete Examples',exLabel:'Exercise',check:'Check',show:'Show solution',reset:'Reset',chooseAnswer:'Choose an answer!',correct:'✓ Correct!',wrong:'✗ Not correct — the correct answer is shown in green.',score:' exercises correct'};
-  return {theory:'Theorie',understand:'Begrip & Intuïtie — Concrete Voorbeelden',exLabel:'Oefening',check:'Controleer',show:'Toon oplossing',reset:'Reset',chooseAnswer:'Kies een antwoord!',correct:'✓ Correct!',wrong:'✗ Niet correct — het juiste antwoord is groen aangeduid.',score:' oefeningen correct'};
+  if(lang==='fr') return {theory:'Théorie',understand:'Compréhension & Intuition — Exemples concrets',exLabel:'Exercice',check:'Vérifier',show:'Voir la solution',reset:'Réinitialiser',chooseAnswer:'Choisissez une réponse !',correct:randEncouragement(),wrong:'✗ Pas correct — la bonne réponse est indiquée en vert.',score:' exercices corrects'};
+  if(lang==='en') return {theory:'Theory',understand:'Understanding & Intuition — Concrete Examples',exLabel:'Exercise',check:'Check',show:'Show solution',reset:'Reset',chooseAnswer:'Choose an answer!',correct:randEncouragement(),wrong:'✗ Not correct — the correct answer is shown in green.',score:' exercises correct'};
+  return {theory:'Theorie',understand:'Begrip & Intuïtie — Concrete Voorbeelden',exLabel:'Oefening',check:'Controleer',show:'Toon oplossing',reset:'Reset',chooseAnswer:'Kies een antwoord!',correct:randEncouragement(),wrong:'✗ Niet correct — het juiste antwoord is groen aangeduid.',score:' oefeningen correct'};
 }
 
 function buildOmiUI(){
