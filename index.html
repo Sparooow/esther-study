@@ -193,6 +193,15 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 .weak-card{background:var(--card);border:1px solid var(--border-light);border-radius:14px;padding:20px;margin-bottom:20px}
 .weak-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:0.85rem}
 .weak-item:hover{background:var(--primary-light)}
+/* ── Login banner */
+.login-banner{background:linear-gradient(120deg,var(--primary-light),var(--blue-light));border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:24px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.login-banner-txt .lt{font-weight:600;font-size:1rem;margin-bottom:3px}
+.login-banner-txt .ls{font-size:0.82rem;color:var(--muted);max-width:420px}
+.login-banner-row{display:flex;gap:8px;align-items:center}
+.login-input{padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'Inter',sans-serif;font-size:0.9rem;width:150px}
+.login-input:focus{outline:none;border-color:var(--primary)}
+.login-go{padding:9px 18px;border-radius:10px;border:none;background:var(--primary);color:#fff;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;font-size:0.9rem;white-space:nowrap}
+.login-go:hover{background:var(--primary-dark)}
 /* ── Flashcards */
 .flash-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
 .flash-modal{width:100%;max-width:480px}
@@ -3620,19 +3629,22 @@ function homeLabels(){
     mac:'Maîtrise MAC', omi:'Maîtrise OmI', weak:'🎯 Tes points à retravailler', weakNone:'Aucun point faible détecté — continue comme ça ! 💪', weakBtn:'exercice raté ou pas revu depuis 7 jours',
     navMac:{ti:'MAC',su:'Compta de gestion — W1 à W6'}, navOmi:{ti:'OmI',su:'Information & organisation — H1 à H6'},
     navTest:{ti:'Examens blancs',su:'2 examens chronométrés de 20 pts'}, navLvl:{ti:'Par niveau',su:'Facile → difficile'},
-    navFlash:{ti:'Flashcards',su:'Révise les définitions & formules'}};
+    navFlash:{ti:'Flashcards',su:'Révise les définitions & formules'},
+    loginTitle:'☁️ Connecte-toi pour sauvegarder ta progression', loginSub:'Entre ton code (le même sur ton PC et ton téléphone). Ta progression se synchronise automatiquement.', loginPlaceholder:'Ton code', loginBtn:'Se connecter'};
   if(lang==='en') return {hi:'Hi Esther 👋', sub:'Ready to ace your exams? Here\'s where you stand.',
     streak:'day streak', today:'exercises today', acc:'accuracy (7 d)', prog:'total progress',
     mac:'MAC mastery', omi:'OmI mastery', weak:'🎯 Spots to review', weakNone:'No weak spots — keep it up! 💪', weakBtn:'failed or not reviewed in 7 days',
     navMac:{ti:'MAC',su:'Management accounting — W1 to W6'}, navOmi:{ti:'OmI',su:'Information & organisation — H1 to H6'},
     navTest:{ti:'Mock exams',su:'2 timed 20-pt exams'}, navLvl:{ti:'By level',su:'Easy → hard'},
-    navFlash:{ti:'Flashcards',su:'Review definitions & formulas'}};
+    navFlash:{ti:'Flashcards',su:'Review definitions & formulas'},
+    loginTitle:'☁️ Log in to save your progress', loginSub:'Enter your code (the same on your PC and phone). Your progress syncs automatically.', loginPlaceholder:'Your code', loginBtn:'Log in'};
   return {hi:'Hoi Esther 👋', sub:'Klaar om je examens te verpletteren? Dit is waar je staat.',
     streak:'dagen op rij', today:'oefeningen vandaag', acc:'juist (7 d)', prog:'totale voortgang',
     mac:'MAC-beheersing', omi:'OmI-beheersing', weak:'🎯 Punten om te herhalen', weakNone:'Geen zwakke punten — ga zo door! 💪', weakBtn:'fout of 7 dagen niet herhaald',
     navMac:{ti:'MAC',su:'Management accounting — W1 t/m W6'}, navOmi:{ti:'OmI',su:'Informatie & organisatie — H1 t/m H6'},
     navTest:{ti:'Proefexamens',su:'2 examens van 20 ptn met timer'}, navLvl:{ti:'Per niveau',su:'Makkelijk → moeilijk'},
-    navFlash:{ti:'Flashcards',su:'Herhaal definities & formules'}};
+    navFlash:{ti:'Flashcards',su:'Herhaal definities & formules'},
+    loginTitle:'☁️ Log in om je voortgang op te slaan', loginSub:'Voer je code in (dezelfde op je pc en telefoon). Je voortgang synchroniseert automatisch.', loginPlaceholder:'Je code', loginBtn:'Inloggen'};
 }
 
 function masteryData(){
@@ -3703,7 +3715,17 @@ function buildHome(){
     return `<div class="mast-row" onclick="goToMastery('${x.key}',${x.idx})"><span class="nm">${x.label}</span><div class="bar"><div class="fill" style="width:${pct}%;background:${color}"></div></div><span class="pct" style="color:${color}">${pct}%</span></div>`;
   };
 
+  const loginBanner = syncCode ? '' : `
+<div class="login-banner">
+  <div class="login-banner-txt"><div class="lt">${L.loginTitle}</div><div class="ls">${L.loginSub}</div></div>
+  <div class="login-banner-row">
+    <input id="loginCodeInput" class="login-input" type="text" value="esther2026" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()">
+    <button class="login-go" onclick="submitSyncCode()">${L.loginBtn}</button>
+  </div>
+</div>`;
+
   area.innerHTML = `
+${loginBanner}
 <div class="home-hero"><h1>${L.hi}</h1><p>${L.sub}</p></div>
 <div class="stat-grid">
   <div class="stat-card"><div class="big">🔥 ${calcStreak()}</div><div class="lbl">${L.streak}</div></div>
@@ -3723,6 +3745,17 @@ function buildHome(){
 <div class="weak-card"><h3 style="font-size:0.95rem;margin-bottom:12px">${L.weak}</h3>
 ${weak.length ? weak.map(w=>`<div class="weak-item" onclick="goToExercise('${w.id}')"><span>${w.why==='failed'?'❌':'⏳'}</span><span>${exTitleOf(w.id)}</span></div>`).join('') + `<div style="font-size:0.74rem;color:var(--muted);margin-top:8px">❌ / ⏳ = ${L.weakBtn}</div>` : `<p style="color:var(--muted);font-size:0.88rem">${L.weakNone}</p>`}
 </div>`;
+}
+
+function submitSyncCode(){
+  const inp = document.getElementById('loginCodeInput');
+  if(!inp) return;
+  const code = inp.value.trim();
+  if(!code) return;
+  syncCode = code;
+  localStorage.setItem('esther_sync_code', syncCode);
+  updateSyncBtn();
+  syncPull().then(()=>{ syncPush(); buildHome(); });
 }
 
 function goToMastery(key, idx){
