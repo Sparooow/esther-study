@@ -233,6 +233,7 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
       <button class="subj-btn" data-subj="mac" onclick="switchSubject('mac')">MAC</button>
       <button class="subj-btn" data-subj="omi" onclick="switchSubject('omi')">📘 OmI</button>
       <button class="subj-btn" data-subj="test" onclick="switchSubject('test')">🎓 Test</button>
+      <button class="subj-btn" data-subj="theory" onclick="switchSubject('theory')">📖 Théorie</button>
       <button class="subj-btn" data-subj="lvl" onclick="switchSubject('lvl')">📶 Niveaus</button>
     </div>
     <div class="subj-divider"></div>
@@ -285,6 +286,13 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
   <div class="tabs" id="testTabsRow"></div>
 </div>
 <main id="testArea" style="max-width:900px;margin:0 auto;padding:32px 20px"></main>
+</div>
+<!-- Theory-only revision space -->
+<div id="theoryWrap" style="display:none">
+<div class="tabs-container">
+  <div class="tabs" id="theoryTabsRow"></div>
+</div>
+<main id="theoryArea" style="max-width:900px;margin:0 auto;padding:32px 20px"></main>
 </div>
 <!-- Levels wrapper -->
 <div id="lvlWrap" style="display:none">
@@ -3045,11 +3053,14 @@ function switchSubject(s){
   document.getElementById('omiWrap').style.display = s==='omi' ? '' : 'none';
   document.getElementById('testWrap').style.display = s==='test' ? '' : 'none';
   document.getElementById('lvlWrap').style.display = s==='lvl' ? '' : 'none';
+  document.getElementById('theoryWrap').style.display = s==='theory' ? '' : 'none';
   document.getElementById('langSwitcher').style.display = '';
   document.getElementById('btnCS').style.display = s==='mac' ? '' : 'none';
   document.querySelectorAll('.subj-btn').forEach(b => b.classList.toggle('active', b.dataset.subj===s));
   if(s==='home'){
     buildHome();
+  } else if(s==='theory'){
+    buildTheoryUI();
   } else if(s==='omi'){
     buildOmiUI();
     updateOmiProgress();
@@ -3063,6 +3074,58 @@ function switchSubject(s){
     updateProgress();
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// Theory-only revision space — all theory, no exercises
+// ═══════════════════════════════════════════════════════════════════
+let theoryTab = 'mac';
+function theoryLabels(){
+  if(lang==='fr') return {mac:'🧮 MAC', omi:'📘 OmI', intro:'Toute la théorie regroupée pour réviser — sans exercices. Clique un chapitre pour le déplier.', understand:'💡 Comprendre & intuition'};
+  if(lang==='en') return {mac:'🧮 MAC', omi:'📘 OmI', intro:'All the theory in one place for revision — no exercises. Click a chapter to expand.', understand:'💡 Understanding & intuition'};
+  return {mac:'🧮 MAC', omi:'📘 OmI', intro:'Alle theorie samen om te herhalen — zonder oefeningen. Klik een hoofdstuk om te openen.', understand:'💡 Begrip & intuïtie'};
+}
+function theoryLocal(o, base){ const k=base+'_'+lang; return o[k]!==undefined?o[k]:(o[base+'_nl']||''); }
+
+function buildTheoryUI(){
+  const L = theoryLabels();
+  const tabsRow = document.getElementById('theoryTabsRow');
+  tabsRow.innerHTML =
+    `<div class="tab ${theoryTab==='mac'?'active':''}" onclick="setTheoryTab('mac')">${L.mac}</div>`+
+    `<div class="tab ${theoryTab==='omi'?'active':''}" onclick="setTheoryTab('omi')">${L.omi}</div>`;
+  const area = document.getElementById('theoryArea');
+  let blocks = '';
+  if(theoryTab==='mac'){
+    const data = getExercises();
+    const titles = lang==='fr'
+      ? ['W1 · Amortissements','W2 · Absorption costing','W3 · Direct costing','W4 · Répartition des coûts','W5 · Break-even & écarts','W6 · Exercices mixtes']
+      : lang==='en'
+      ? ['W1 · Depreciation','W2 · Absorption costing','W3 · Direct costing','W4 · Cost allocation','W5 · Break-even & variances','W6 · Mixed exercises']
+      : ['W1 · Afschrijvingen','W2 · Absorption costing','W3 · Direct costing','W4 · Kostenverbijzondering','W5 · Break-even & verschillen','W6 · Gemengde oefeningen'];
+    ['w1','w2','w3','w4','w5','w6'].forEach((wk,i)=>{
+      const th = data[wk] && data[wk].theory; if(!th) return;
+      const body = (th[lang]||th.nl||'').trim(); if(!body) return;
+      blocks += theoryAccordion(titles[i], body, 'var(--primary)', i===0);
+    });
+  } else {
+    OMI_CHAPTERS.forEach((ch,i)=>{
+      const title = theoryLocal(ch,'title');
+      let body = theoryLocal(ch,'theory');
+      const und = theoryLocal(ch,'understand');
+      if(und) body += `<h3 style="margin-top:18px">${L.understand}</h3>` + und;
+      blocks += theoryAccordion(title, body, '#f97316', i===0);
+    });
+  }
+  area.innerHTML = `<div class="section-sub" style="margin-bottom:20px">${L.intro}</div>${blocks}`;
+}
+function theoryAccordion(title, body, color, open){
+  return `<div class="theory-toggle" style="border-color:${color}33">
+  <div class="theory-toggle-header" style="color:${color}" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.arr').textContent=this.nextElementSibling.classList.contains('open')?'▲':'▼'">
+    <span>${title}</span><span class="arr">${open?'▲':'▼'}</span>
+  </div>
+  <div class="theory-body ${open?'open':''}">${body}</div>
+</div>`;
+}
+function setTheoryTab(t){ theoryTab=t; buildTheoryUI(); }
 
 // ═══════════════════════════════════════════════════════════════════
 // Niveaus / Niveaux — exercises grouped by difficulty
@@ -3629,21 +3692,21 @@ function homeLabels(){
     mac:'Maîtrise MAC', omi:'Maîtrise OmI', weak:'🎯 Tes points à retravailler', weakNone:'Aucun point faible détecté — continue comme ça ! 💪', weakBtn:'exercice raté ou pas revu depuis 7 jours',
     navMac:{ti:'MAC',su:'Compta de gestion — W1 à W6'}, navOmi:{ti:'OmI',su:'Information & organisation — H1 à H6'},
     navTest:{ti:'Examens blancs',su:'2 examens chronométrés de 20 pts'}, navLvl:{ti:'Par niveau',su:'Facile → difficile'},
-    navFlash:{ti:'Flashcards',su:'Révise les définitions & formules'},
+    navFlash:{ti:'Flashcards',su:'Révise les définitions & formules'}, navTheory:{ti:'Théorie',su:'Toute la théorie pour réviser'},
     loginTitle:'☁️ Connecte-toi pour sauvegarder ta progression', loginSub:'Entre ton code (le même sur ton PC et ton téléphone). Ta progression se synchronise automatiquement.', loginPlaceholder:'Ton code', loginBtn:'Se connecter'};
   if(lang==='en') return {hi:'Hi Esther 👋', sub:'Ready to ace your exams? Here\'s where you stand.',
     streak:'day streak', today:'exercises today', acc:'accuracy (7 d)', prog:'total progress',
     mac:'MAC mastery', omi:'OmI mastery', weak:'🎯 Spots to review', weakNone:'No weak spots — keep it up! 💪', weakBtn:'failed or not reviewed in 7 days',
     navMac:{ti:'MAC',su:'Management accounting — W1 to W6'}, navOmi:{ti:'OmI',su:'Information & organisation — H1 to H6'},
     navTest:{ti:'Mock exams',su:'2 timed 20-pt exams'}, navLvl:{ti:'By level',su:'Easy → hard'},
-    navFlash:{ti:'Flashcards',su:'Review definitions & formulas'},
+    navFlash:{ti:'Flashcards',su:'Review definitions & formulas'}, navTheory:{ti:'Theory',su:'All theory for revision'},
     loginTitle:'☁️ Log in to save your progress', loginSub:'Enter your code (the same on your PC and phone). Your progress syncs automatically.', loginPlaceholder:'Your code', loginBtn:'Log in'};
   return {hi:'Hoi Esther 👋', sub:'Klaar om je examens te verpletteren? Dit is waar je staat.',
     streak:'dagen op rij', today:'oefeningen vandaag', acc:'juist (7 d)', prog:'totale voortgang',
     mac:'MAC-beheersing', omi:'OmI-beheersing', weak:'🎯 Punten om te herhalen', weakNone:'Geen zwakke punten — ga zo door! 💪', weakBtn:'fout of 7 dagen niet herhaald',
     navMac:{ti:'MAC',su:'Management accounting — W1 t/m W6'}, navOmi:{ti:'OmI',su:'Informatie & organisatie — H1 t/m H6'},
     navTest:{ti:'Proefexamens',su:'2 examens van 20 ptn met timer'}, navLvl:{ti:'Per niveau',su:'Makkelijk → moeilijk'},
-    navFlash:{ti:'Flashcards',su:'Herhaal definities & formules'},
+    navFlash:{ti:'Flashcards',su:'Herhaal definities & formules'}, navTheory:{ti:'Theorie',su:'Alle theorie om te herhalen'},
     loginTitle:'☁️ Log in om je voortgang op te slaan', loginSub:'Voer je code in (dezelfde op je pc en telefoon). Je voortgang synchroniseert automatisch.', loginPlaceholder:'Je code', loginBtn:'Inloggen'};
 }
 
@@ -3738,6 +3801,7 @@ ${loginBanner}
   <div class="nav-card" onclick="switchSubject('omi')"><div class="ic">📘</div><div class="ti">${L.navOmi.ti}</div><div class="su">${L.navOmi.su}</div></div>
   <div class="nav-card" onclick="switchSubject('test')"><div class="ic">🎓</div><div class="ti">${L.navTest.ti}</div><div class="su">${L.navTest.su}</div></div>
   <div class="nav-card" onclick="switchSubject('lvl')"><div class="ic">📶</div><div class="ti">${L.navLvl.ti}</div><div class="su">${L.navLvl.su}</div></div>
+  <div class="nav-card" onclick="switchSubject('theory')"><div class="ic">📖</div><div class="ti">${L.navTheory.ti}</div><div class="su">${L.navTheory.su}</div></div>
   <div class="nav-card" onclick="openFlash()"><div class="ic">🃏</div><div class="ti">${L.navFlash.ti}</div><div class="su">${L.navFlash.su}</div></div>
 </div>
 <div class="mastery-section"><h3>🧮 ${L.mac}</h3>${m.mac.map(x=>bar(x,'var(--primary)')).join('')}</div>
