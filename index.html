@@ -3077,6 +3077,13 @@ const OMI_CHAPTERS = [
 
 
 function switchSubject(s){
+  // categories belong to exam 1 — clicking one always returns to exam 1
+  if(currentExam!==1){
+    currentExam = 1; localStorage.setItem('esther_exam','1');
+    document.querySelectorAll('.exam-btn').forEach(b=>b.classList.toggle('active', +b.dataset.exam===1));
+    const e2=document.getElementById('exam2Wrap'); if(e2) e2.style.display='none';
+    const pmtc=document.getElementById('pmTabsContainer'); if(pmtc) pmtc.style.display='none';
+  }
   currentSubject = s;
   document.getElementById('homeWrap').style.display = s==='home' ? '' : 'none';
   document.getElementById('macWrap').style.display = s==='mac' ? '' : 'none';
@@ -3116,17 +3123,17 @@ function switchExam(n){
   localStorage.setItem('esther_exam', String(n));
   document.querySelectorAll('.exam-btn').forEach(b=>b.classList.toggle('active', +b.dataset.exam===n));
   const ex1 = n===1;
-  // exam-1 chrome
-  document.getElementById('subjSwitcher').style.display = ex1 ? '' : 'none';
   const gp=document.getElementById('globalProgress'); if(gp) gp.style.display = ex1 ? '' : 'none';
-  // exam-2 placeholder
   document.getElementById('exam2Wrap').style.display = ex1 ? 'none' : '';
   if(ex1){
     switchSubject('home');
   } else {
+    // keep the category bar visible (so the user can always navigate away),
+    // but no category is "active" while in exam 2
     ['homeWrap','macWrap','omiWrap','testWrap','lvlWrap','theoryWrap'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.style.display='none';
     });
+    document.querySelectorAll('.subj-btn').forEach(b=>b.classList.remove('active'));
     document.getElementById('btnCS').style.display='none';
     buildPmUI();
   }
@@ -4663,8 +4670,7 @@ PM_UNITS.push(...[{"key":"u1","pts":10,"title_nl":"1 · Procesmanagement","title
 
 // Init
 buildUI();
-switchSubject('home');
-if(currentExam===2) switchExam(2); else switchExam(1);
+switchExam(currentExam===2 ? 2 : 1); // restores last exam; switchExam(1) sets home
 updateSyncBtn();
 if(localStorage.getItem('esther_dark')==='1'){ const b=document.getElementById('darkBtn'); if(b) b.textContent='☀️'; }
 if(syncCode) syncPull().then(()=>{ if(currentSubject==='home') buildHome(); });
