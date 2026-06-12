@@ -177,6 +177,35 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 .exam2-empty .hintbox{margin-top:22px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:18px 20px;text-align:left;font-size:0.9rem;color:var(--text)}
 /* ── OmI accents */
 .omi-tab-active{color:#E07020!important;border-bottom-color:#E07020!important}
+/* ── Global landing dashboard */
+.land-hero{margin-bottom:8px}
+.land-hero h1{font-size:1.8rem;font-weight:700}
+.land-hero p{color:var(--muted)}
+.exam-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:22px 0}
+.exam-dash{border-radius:18px;padding:20px;color:#fff;position:relative;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.exam-dash:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.exam-dash.e2{background:linear-gradient(135deg,#0d9488,#0891b2)}
+.exam-dash.e1{background:linear-gradient(135deg,#D4537E,#f97316)}
+.exam-dash .ed-top{display:flex;justify-content:space-between;align-items:flex-start}
+.exam-dash .ed-name{font-size:1.15rem;font-weight:700}
+.exam-dash .ed-sub{font-size:0.8rem;opacity:.9}
+.exam-dash .ed-cd{text-align:right}
+.exam-dash .ed-cd .d{font-size:1.9rem;font-weight:800;line-height:1}
+.exam-dash .ed-cd .l{font-size:0.72rem;opacity:.9}
+.exam-dash .ed-bar{height:9px;background:rgba(255,255,255,.28);border-radius:8px;margin:14px 0 6px;overflow:hidden}
+.exam-dash .ed-bar i{display:block;height:9px;border-radius:8px;background:#fff}
+.exam-dash .ed-stats{display:flex;justify-content:space-between;font-size:0.8rem;opacity:.95}
+.exam-dash .ed-plan{margin-top:12px;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 12px;font-size:0.85rem}
+.exam-dash .ed-plan b{font-size:1.05rem}
+.exam-dash .ed-go{margin-top:12px;display:inline-block;background:#fff;color:#222;font-weight:700;font-size:0.85rem;padding:7px 16px;border-radius:20px}
+.plan-banner{background:var(--card);border:1px solid var(--border-light);border-radius:16px;padding:18px 20px;margin-bottom:20px}
+.plan-banner h3{font-size:1rem;margin-bottom:10px}
+.plan-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border-light)}
+.plan-row:last-child{border-bottom:none}
+.plan-row .pr-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.plan-row .pr-txt{flex:1;font-size:0.9rem}
+.plan-row .pr-prog{font-size:0.82rem;font-weight:600}
+.date-edit{font-size:0.78rem;color:var(--muted);cursor:pointer;text-decoration:underline;margin-left:6px}
 /* ── Gamification */
 .xp-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:linear-gradient(90deg,#f59e0b22,#fb923c22);border:1px solid #f59e0b55;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .xp-chip .lvl{background:#f59e0b;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem}
@@ -284,7 +313,7 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
   <div class="cheatsheet-panel" id="csPanel"></div>
 </div>
 <header>
-  <div><span class="logo">MAC</span><span class="logo-sub" id="logoSub">Oefeningen</span></div>
+  <div style="cursor:pointer" onclick="showLanding()" title="Accueil"><span class="logo">📚 Esther</span><span class="logo-sub" id="logoSub">Study</span></div>
   <div class="header-right">
     <div class="exam-switcher" id="examSwitcher">
       <button class="exam-btn active" data-exam="1" onclick="switchExam(1)">📕 Exam 1</button>
@@ -309,13 +338,17 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
     <button class="lang-btn" id="syncBtn" onclick="syncLogin()" style="margin-left:8px" title="Synchroniser entre appareils">☁️</button>
     <button class="lang-btn" id="darkBtn" onclick="toggleDark()" title="Mode sombre">🌙</button>
     <button class="lang-btn mute-btn" id="muteBtn" onclick="toggleMute()" title="Sons">🔊</button>
-    <span class="xp-chip" id="xpChip" onclick="switchSubject('home')"><span class="lvl" id="xpChipLvl">1</span><span id="xpChipXp">0 XP</span></span>
+    <span class="xp-chip" id="xpChip" onclick="showLanding()"><span class="lvl" id="xpChipLvl">1</span><span id="xpChipXp">0 XP</span></span>
   </div>
 </header>
 <div class="global-progress" id="globalProgress">
   <span id="gpLabel">correct beantwoord</span>
   <div class="global-bar"><div class="global-fill" id="globalFill"></div></div>
   <span id="gpCount">0/43</span>
+</div>
+<!-- Global landing dashboard -->
+<div id="landingWrap" style="display:none">
+  <main id="landingArea" style="max-width:900px;margin:0 auto;padding:32px 20px"></main>
 </div>
 <!-- MAC wrapper -->
 <div id="homeWrap" style="display:none">
@@ -4138,6 +4171,109 @@ function coverageHtml(){
     <div class="cov-legend"><span><i class="cov-dot" style="background:#10b981"></i>${GL.covLeg[0]}</span><span><i class="cov-dot" style="background:#f59e0b"></i>${GL.covLeg[1]}</span><span><i class="cov-dot" style="background:var(--border-light)"></i>${GL.covLeg[2]}</span></div></div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// Global landing dashboard — account view recapping BOTH exams,
+// countdowns + adaptive daily plan (recomputed every visit)
+// ═══════════════════════════════════════════════════════════════════
+let currentView = 'landing';
+function examDates(){ return JSON.parse(localStorage.getItem('esther_examdates')||'null')||{e1:'2026-06-28',e2:'2026-06-18'}; }
+function setExamDate(which){
+  const d=examDates(); const cur=d[which];
+  const msg=lang==='fr'?'Date de l\'examen (AAAA-MM-JJ) :':lang==='en'?'Exam date (YYYY-MM-DD):':'Examendatum (JJJJ-MM-DD):';
+  const v=prompt(msg, cur); if(!v) return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v.trim())){ return; }
+  d[which]=v.trim(); localStorage.setItem('esther_examdates',JSON.stringify(d)); if(typeof schedulePush==='function') schedulePush(); buildLanding();
+}
+function daysLeftTo(dateStr){
+  const now=new Date(); const t=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const p=dateStr.split('-').map(Number); const ex=new Date(p[0],p[1]-1,p[2]);
+  return Math.round((ex-t)/86400000);
+}
+function fmtDate(dateStr){
+  const p=dateStr.split('-').map(Number); const d=new Date(p[0],p[1]-1,p[2]);
+  const loc=lang==='fr'?'fr-FR':lang==='en'?'en-GB':'nl-NL';
+  return d.toLocaleDateString(loc,{day:'numeric',month:'long'});
+}
+function examStats(which){
+  const dates=examDates();
+  let total=0, mastered=0, scope;
+  if(which==='e2'){ PM_UNITS.forEach(u=>{ total+=u.exercises.length; mastered+=u.exercises.filter(e=>pmCorrectSet.has(e.id)).length; }); scope=a=>/^u\d+_/.test(a.id); }
+  else { const m=masteryData(); total=m.mac.reduce((s,x)=>s+x.n,0)+m.omi.reduce((s,x)=>s+x.n,0); mastered=m.mac.reduce((s,x)=>s+x.ok,0)+m.omi.reduce((s,x)=>s+x.ok,0); scope=a=>(a.id.startsWith('ex')||a.id.startsWith('h'))&&!a.id.startsWith('lvl_'); }
+  const remaining=Math.max(0,total-mastered);
+  const daysLeft=daysLeftTo(dates[which]);
+  const perDay= remaining>0 ? Math.ceil(remaining/Math.max(1,daysLeft)) : 0;
+  const today=dayKey(Date.now());
+  const doneToday=attempts.filter(a=>scope(a)&&a.ok&&dayKey(a.ts)===today).length;
+  return {total,mastered,remaining,daysLeft,perDay,doneToday,pct:total?Math.round(mastered/total*100):0,date:dates[which]};
+}
+function landingLabels(){
+  if(lang==='fr') return {hi:'Salut Esther 👋',sub:'Ton tableau de bord — tes deux examens en un coup d\'œil.',mastered:'maîtrisés',enter:'Ouvrir',plan:'🗓️ Ton plan du jour',planSub:'Recalculé à chaque visite selon ton retard et les jours restants.',today:'aujourd\'hui',perDay:'exos/jour',done:'🎉 Tout est maîtrisé — révise et fais les examens blancs !',examDay:'📣 C\'est bientôt — fonce sur les révisions !',passed:'Examen passé',edit:'modifier',goalMet:'objectif du jour atteint ✅',behindMsg:d=>`Plus que ${d} jours — accélère un peu 💪`,onTrackMsg:'Tu es dans les temps 👍'};
+  if(lang==='en') return {hi:'Hi Esther 👋',sub:'Your dashboard — both exams at a glance.',mastered:'mastered',enter:'Open',plan:'🗓️ Your plan for today',planSub:'Recomputed every visit from your backlog and days left.',today:'today',perDay:'ex/day',done:'🎉 All mastered — revise & do mock exams!',examDay:'📣 Almost there — focus on revision!',passed:'Exam over',edit:'edit',goalMet:'daily goal reached ✅',behindMsg:d=>`Only ${d} days left — pick up the pace 💪`,onTrackMsg:'You\'re on track 👍'};
+  return {hi:'Hoi Esther 👋',sub:'Je dashboard — beide examens in één oogopslag.',mastered:'beheerst',enter:'Openen',plan:'🗓️ Je plan voor vandaag',planSub:'Elke keer herberekend op basis van je achterstand en resterende dagen.',today:'vandaag',perDay:'oef/dag',done:'🎉 Alles beheerst — herhaal & doe proefexamens!',examDay:'📣 Bijna zover — focus op herhalen!',passed:'Examen voorbij',edit:'wijzigen',goalMet:'dagdoel gehaald ✅',behindMsg:d=>`Nog ${d} dagen — tempo omhoog 💪`,onTrackMsg:'Je ligt op schema 👍'};
+}
+function examCardHtml(which){
+  const LL=landingLabels(); const s=examStats(which);
+  const cls=which==='e2'?'e2':'e1';
+  const name=which==='e2'?'📋 Process Management':'🧮 MAC & 📘 OmI';
+  const enterN=which==='e2'?2:1;
+  const cd = s.daysLeft<0 ? '✓' : 'J-'+s.daysLeft;
+  let plan;
+  if(s.remaining===0) plan=`<div class="ed-plan">${LL.done}</div>`;
+  else if(s.daysLeft<=0) plan=`<div class="ed-plan">${LL.examDay}</div>`;
+  else { const met=s.doneToday>=s.perDay; plan=`<div class="ed-plan">${LL.today.charAt(0).toUpperCase()+LL.today.slice(1)} : <b>${s.doneToday}/${s.perDay}</b> ${LL.perDay} ${met?'· '+LL.goalMet:''}</div>`; }
+  return `<div class="exam-dash ${cls}" onclick="enterExam(${enterN})">
+    <div class="ed-top"><div><div class="ed-name">${name}</div><div class="ed-sub">${fmtDate(s.date)}</div></div>
+      <div class="ed-cd"><div class="d">${cd}</div><div class="l">${s.daysLeft<0?LL.passed:fmtDate(s.date)}</div></div></div>
+    <div class="ed-bar"><i style="width:${s.pct}%"></i></div>
+    <div class="ed-stats"><span>${s.mastered}/${s.total} ${LL.mastered}</span><span>${s.pct}%</span></div>
+    ${plan}
+    <div class="ed-go">${LL.enter} →</div></div>`;
+}
+function buildLanding(){
+  const area=document.getElementById('landingArea'); const LL=landingLabels(); const li=levelInfo(XP);
+  const e2=examStats('e2'), e1=examStats('e1');
+  const today=dayKey(Date.now()); const todayTotal=attempts.filter(a=>dayKey(a.ts)===today).length;
+  // plan rows ordered by urgency (fewer days first)
+  const rows=[{w:'e2',s:e2,c:'#0d9488',n:'Process Management'},{w:'e1',s:e1,c:'#D4537E',n:'MAC & OmI'}].sort((a,b)=>a.s.daysLeft-b.s.daysLeft);
+  const planRows=rows.map(r=>{
+    let txt;
+    if(r.s.remaining===0) txt=`<b>${r.n}</b> — ${LL.done}`;
+    else if(r.s.daysLeft<=0) txt=`<b>${r.n}</b> — ${LL.examDay}`;
+    else txt=`<b>${r.n}</b> — ${r.s.perDay} ${LL.perDay} · ${r.s.daysLeft<=4?LL.behindMsg(r.s.daysLeft):LL.onTrackMsg}`;
+    const prog=r.s.remaining===0?'✓':`${r.s.doneToday}/${r.s.perDay}`;
+    return `<div class="plan-row"><span class="pr-dot" style="background:${r.c}"></span><span class="pr-txt">${txt}</span><span class="pr-prog" style="color:${r.c}">${prog}</span></div>`;
+  }).join('');
+  const loginBanner = syncCode ? '' : (()=>{ const L=homeLabels(); return `<div class="login-banner">
+  <div class="login-banner-txt"><div class="lt">${L.loginTitle}</div><div class="ls">${L.loginSub}</div></div>
+  <div class="login-banner-row"><input id="loginCodeInput" class="login-input" type="text" value="esther2026" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()"><button class="login-go" onclick="submitSyncCode()">${L.loginBtn}</button></div></div>`; })();
+  area.innerHTML = `
+${loginBanner}
+<div class="land-hero"><h1>${LL.hi}</h1><p>${LL.sub}</p></div>
+<div class="stat-grid" style="margin-top:18px">
+  <div class="stat-card"><div class="big">🔥 ${calcStreak()}</div><div class="lbl">${homeLabels().streak}</div></div>
+  <div class="stat-card"><div class="big"><span style="background:#f59e0b;color:#fff;border-radius:10px;padding:1px 9px;font-size:1.2rem;font-weight:700">${li.level}</span></div><div class="lbl">${li.title} · ${XP} XP</div></div>
+  <div class="stat-card"><div class="big">✅ ${todayTotal}</div><div class="lbl">${homeLabels().today}</div></div>
+  <div class="stat-card"><div class="big">🏅 ${badges.size}/${BADGES.length}</div><div class="lbl">badges</div></div>
+</div>
+<div class="exam-cards">${examCardHtml('e2')}${examCardHtml('e1')}</div>
+<div class="plan-banner"><h3>${LL.plan}</h3><div class="sub" style="font-size:0.8rem;color:var(--muted);margin-bottom:8px">${LL.planSub}</div>${planRows}</div>
+<div style="text-align:center;font-size:0.78rem;color:var(--muted)">📅 ${LL.edit}: <span class="date-edit" onclick="setExamDate('e2')">Process Mgmt ${fmtDate(e2.date)}</span> · <span class="date-edit" onclick="setExamDate('e1')">MAC/OmI ${fmtDate(e1.date)}</span></div>`;
+}
+function showLanding(){
+  currentView='landing';
+  ['homeWrap','macWrap','omiWrap','testWrap','lvlWrap','theoryWrap','exam2Wrap'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  ['examSwitcher','subjSwitcher','pmTabsContainer','globalProgress'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const cs=document.getElementById('btnCS'); if(cs) cs.style.display='none';
+  document.getElementById('landingWrap').style.display='';
+  buildLanding();
+}
+function enterExam(n){
+  currentView='exam';
+  document.getElementById('landingWrap').style.display='none';
+  ['examSwitcher','subjSwitcher'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  switchExam(n);
+}
+
 function buildHome(){
   const L = homeLabels();
   const area = document.getElementById('homeArea');
@@ -4336,6 +4472,7 @@ async function syncPull(){
       (data.mac||[]).forEach(id => correctSet.add(id));
       (data.omi||[]).forEach(id => omiCorrectSet.add(id));
       if(data.pm && typeof pmCorrectSet!=='undefined'){ data.pm.forEach(id=>pmCorrectSet.add(id)); localStorage.setItem('esther_pm_correct', JSON.stringify([...pmCorrectSet])); if(currentExam===2 && typeof updatePmProgress==='function') updatePmProgress(); }
+      if(data.examdates){ localStorage.setItem('esther_examdates', JSON.stringify(data.examdates)); if(currentView==='landing' && typeof buildLanding==='function') buildLanding(); }
       if(data.game && typeof XP!=='undefined'){ const g=data.game;
         XP=Math.max(XP, g.xp||0);
         (g.xpIds||[]).forEach(id=>xpIds.add(id));
@@ -4367,7 +4504,8 @@ async function syncPush(){
     const body = JSON.stringify([{
       code: syncCode,
       data: { mac: [...correctSet], omi: [...omiCorrectSet], pm: (typeof pmCorrectSet!=='undefined'?[...pmCorrectSet]:[]), attempts: attempts.slice(-2000),
-        game: (typeof XP!=='undefined'?{ xp:XP, xpIds:[...xpIds], badges:[...badges], srs:srs, exambest:_examBestPct }:undefined) },
+        game: (typeof XP!=='undefined'?{ xp:XP, xpIds:[...xpIds], badges:[...badges], srs:srs, exambest:_examBestPct }:undefined),
+        examdates: (typeof examDates==='function'?examDates():undefined) },
       updated_at: new Date().toISOString()
     }]);
     const res = await fetch(SB_URL + '/rest/v1/progress', {
@@ -4990,7 +5128,8 @@ PM_EXAMS.push(...[{"key":"pe1","title_nl":"Proefexamen 1 — Process Management"
 
 // Init
 buildUI();
-switchExam(currentExam===2 ? 2 : 1); // restores last exam; switchExam(1) sets home
+switchExam(currentExam===2 ? 2 : 1); // pre-build exam chrome/data
+showLanding();                       // but land on the global dashboard first
 refreshXpChip();
 if(muted){ const mb=document.getElementById('muteBtn'); if(mb) mb.textContent='🔇'; }
 updateSyncBtn();
