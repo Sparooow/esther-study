@@ -177,6 +177,48 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 .exam2-empty .hintbox{margin-top:22px;background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:18px 20px;text-align:left;font-size:0.9rem;color:var(--text)}
 /* ── OmI accents */
 .omi-tab-active{color:#E07020!important;border-bottom-color:#E07020!important}
+/* ── Gamification */
+.xp-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;background:linear-gradient(90deg,#f59e0b22,#fb923c22);border:1px solid #f59e0b55;color:var(--text);font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.xp-chip .lvl{background:#f59e0b;color:#fff;border-radius:10px;padding:1px 7px;font-size:0.72rem}
+.xp-card{background:var(--card);border:1px solid var(--border-light);border-radius:14px;padding:18px;margin-bottom:20px}
+.xp-card .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.xp-card .title{font-weight:700;font-size:1.05rem}
+.xp-card .sub{font-size:0.8rem;color:var(--muted)}
+.xp-bar{height:12px;background:var(--border-light);border-radius:10px;overflow:hidden}
+.xp-fill{height:12px;border-radius:10px;background:linear-gradient(90deg,#f59e0b,#fb923c);transition:width .6s}
+.daily-ring{display:flex;align-items:center;gap:14px}
+.daily-ring svg{flex:none}
+.daily-ring .dr-txt .n{font-size:1.5rem;font-weight:700}
+.daily-ring .dr-txt .l{font-size:0.8rem;color:var(--muted)}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.badge-cell{text-align:center;padding:12px 6px;border-radius:12px;background:var(--card2);border:1px solid var(--border-light);font-size:0.68rem;color:var(--muted)}
+.badge-cell.got{background:linear-gradient(160deg,#f59e0b18,#fb923c18);border-color:#f59e0b66;color:var(--text)}
+.badge-cell .ic{font-size:1.6rem;display:block;margin-bottom:4px;filter:grayscale(1) opacity(.45)}
+.badge-cell.got .ic{filter:none}
+.badge-cell .bl{font-weight:600;line-height:1.15}
+/* ── Coverage map */
+.cov-wrap{background:var(--card);border:1px solid var(--border-light);border-radius:14px;padding:18px;margin-bottom:20px}
+.cov-group{margin-bottom:14px}
+.cov-group h4{font-size:0.85rem;margin-bottom:6px;color:var(--muted);display:flex;justify-content:space-between}
+.cov-cells{display:flex;flex-wrap:wrap;gap:5px}
+.cov-cell{width:20px;height:20px;border-radius:5px;cursor:pointer;border:1px solid #00000010;transition:transform .1s}
+.cov-cell:hover{transform:scale(1.25)}
+.cov-legend{display:flex;gap:16px;font-size:0.76rem;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.cov-legend span{display:inline-flex;align-items:center;gap:5px}
+.cov-dot{width:12px;height:12px;border-radius:3px;display:inline-block}
+/* ── Review / mistakes */
+.review-card{background:var(--card);border:1px solid var(--border-light);border-radius:14px;padding:18px;margin-bottom:20px}
+.review-card .big-btn{margin-top:10px;padding:11px 20px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;font-size:0.92rem}
+.review-card .big-btn:disabled{opacity:.5;cursor:default}
+/* ── Toast + confetti + mascot */
+#toastWrap{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:400;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 20px;box-shadow:0 8px 30px rgba(0,0,0,.18);font-size:0.92rem;display:flex;align-items:center;gap:10px;animation:toastIn .35s cubic-bezier(.2,1.3,.4,1);max-width:340px}
+.toast .tic{font-size:1.6rem}
+.toast .tt{font-weight:700}
+.toast .ts{font-size:0.8rem;color:var(--muted)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.9)}to{opacity:1;transform:none}}
+#confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:390}
+.mute-btn{cursor:pointer}
 /* ── Diagrams (SVG) */
 .diagram{margin:20px 0;background:var(--card2);border:1px solid var(--border-light);border-radius:14px;padding:16px 18px}
 .diagram figcaption{font-weight:600;font-size:0.92rem;margin-bottom:12px;color:var(--text)}
@@ -266,6 +308,8 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
     </div>
     <button class="lang-btn" id="syncBtn" onclick="syncLogin()" style="margin-left:8px" title="Synchroniser entre appareils">☁️</button>
     <button class="lang-btn" id="darkBtn" onclick="toggleDark()" title="Mode sombre">🌙</button>
+    <button class="lang-btn mute-btn" id="muteBtn" onclick="toggleMute()" title="Sons">🔊</button>
+    <span class="xp-chip" id="xpChip" onclick="switchSubject('home')"><span class="lvl" id="xpChipLvl">1</span><span id="xpChipXp">0 XP</span></span>
   </div>
 </header>
 <div class="global-progress" id="globalProgress">
@@ -277,6 +321,8 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 <div id="homeWrap" style="display:none">
   <main id="homeArea" style="max-width:900px;margin:0 auto;padding:32px 20px"></main>
 </div>
+<div id="toastWrap"></div>
+<canvas id="confettiCanvas" style="display:none"></canvas>
 <div id="flashOverlay" class="flash-overlay" style="display:none" onclick="if(event.target===this)closeFlash()">
   <div class="flash-modal">
     <div class="flash-top"><span id="flashCount"></span><button class="lang-btn" onclick="closeFlash()">✕</button></div>
@@ -3515,6 +3561,8 @@ function gradeExam(key){
   const resEl = document.getElementById('examResult_'+key);
   if(resEl) resEl.innerHTML = `<div class="exam-result"><div class="big-score">${score}/${total}</div><div>${lbl.grade(ratio)}</div></div>`;
   resEl.scrollIntoView({behavior:'smooth'});
+  setExamBest(ratio);
+  if(ratio>=0.5){ confetti(ratio>=0.85?180:110); chime('win'); }
 }
 
 function resetExam(key){
@@ -3782,7 +3830,159 @@ function recordAttempt(exId, ok){
   attempts.push({id:exId, ok:!!ok, ts:Date.now()});
   if(attempts.length>3000) attempts = attempts.slice(-3000);
   localStorage.setItem('esther_attempts', JSON.stringify(attempts));
+  gameOnAttempt(exId, !!ok);
   if(typeof schedulePush==='function') schedulePush();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Gamification engine — XP, levels, badges, daily goal, SRS, fun feedback
+// ═══════════════════════════════════════════════════════════════════
+let XP = +(localStorage.getItem('esther_xp')||0);
+let xpIds = new Set(JSON.parse(localStorage.getItem('esther_xp_ids')||'[]'));
+let badges = new Set(JSON.parse(localStorage.getItem('esther_badges')||'[]'));
+let srs = JSON.parse(localStorage.getItem('esther_srs')||'{}');
+let muted = localStorage.getItem('esther_mute')==='1';
+const DAILY_GOAL = 10;
+
+function saveGame(){ try{
+  localStorage.setItem('esther_xp', String(XP));
+  localStorage.setItem('esther_xp_ids', JSON.stringify([...xpIds]));
+  localStorage.setItem('esther_badges', JSON.stringify([...badges]));
+  localStorage.setItem('esther_srs', JSON.stringify(srs));
+}catch(e){} }
+
+const LEVELS = [0,100,250,450,700,1000,1400,1900,2500,3200,4000,5000,6200,7600,9200,11000];
+function lvlTitle(l){
+  const fr=['Débutante','Apprentie','Élève appliquée','Étudiante','Stratège','Experte','As de la matière','Maître','Légende','Génie absolu'];
+  const en=['Beginner','Apprentice','Diligent','Student','Strategist','Expert','Subject ace','Master','Legend','Absolute genius'];
+  const nl=['Beginner','Leerling','IJverig','Student','Strateeg','Expert','Vakheld','Meester','Legende','Absoluut genie'];
+  const arr=lang==='fr'?fr:lang==='en'?en:nl; return arr[Math.min(l-1,arr.length-1)];
+}
+function levelInfo(xp){
+  let l=1; for(let i=0;i<LEVELS.length;i++){ if(xp>=LEVELS[i]) l=i+1; }
+  const cur=LEVELS[l-1]||0; const next=LEVELS[l]!==undefined?LEVELS[l]:cur;
+  const span=Math.max(1,next-cur); const into=xp-cur;
+  return {level:l, title:lvlTitle(l), cur, next, into, span, pct:next>cur?Math.min(100,Math.round(into/span*100)):100, max:l>=LEVELS.length};
+}
+
+// ── Sound (WebAudio) ──
+let _ac=null;
+function chime(type){
+  if(muted) return;
+  try{ _ac=_ac||new (window.AudioContext||window.webkitAudioContext)();
+    const seq = type==='level'?[523,659,784,1047]:type==='win'?[659,784,1047]:type==='badge'?[784,1047,1319]:[880];
+    seq.forEach((f,i)=>{ const o=_ac.createOscillator(),g=_ac.createGain(); o.type='sine'; o.frequency.value=f;
+      const t=_ac.currentTime+i*0.09; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+      o.connect(g); g.connect(_ac.destination); o.start(t); o.stop(t+0.18); });
+  }catch(e){}
+}
+function toggleMute(){ muted=!muted; localStorage.setItem('esther_mute', muted?'1':'0'); const b=document.getElementById('muteBtn'); if(b) b.textContent=muted?'🔇':'🔊'; }
+
+// ── Confetti ──
+function confetti(power){
+  const cv=document.getElementById('confettiCanvas'); if(!cv) return;
+  cv.style.display='block'; cv.width=innerWidth; cv.height=innerHeight;
+  const ctx=cv.getContext('2d'); const cols=['#f59e0b','#fb923c','#D4537E','#60AEDF','#0d9488','#10b981','#a855f7'];
+  const N=power||120; const ps=[];
+  for(let i=0;i<N;i++) ps.push({x:innerWidth/2+(Math.random()-0.5)*200,y:innerHeight/3,vx:(Math.random()-0.5)*9,vy:Math.random()*-9-3,g:0.22+Math.random()*0.1,s:5+Math.random()*6,c:cols[i%cols.length],r:Math.random()*6,vr:(Math.random()-0.5)*0.4,life:0});
+  let frames=0;
+  (function anim(){ ctx.clearRect(0,0,cv.width,cv.height); frames++;
+    ps.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore(); });
+    if(frames<130) requestAnimationFrame(anim); else cv.style.display='none';
+  })();
+}
+
+// ── Toasts ──
+function showToast(icon, title, sub, dur){
+  const w=document.getElementById('toastWrap'); if(!w) return;
+  const el=document.createElement('div'); el.className='toast';
+  el.innerHTML=`<span class="tic">${icon}</span><div><div class="tt">${title}</div>${sub?`<div class="ts">${sub}</div>`:''}</div>`;
+  w.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .4s,transform .4s'; el.style.opacity='0'; el.style.transform='translateY(-10px)'; setTimeout(()=>el.remove(),400); }, dur||3200);
+}
+
+// ── Badges definitions ──
+const BADGES = [
+  {key:'first',  ic:'🌱', test:c=>c.totalCorrect>=1,   fr:'Premier pas',en:'First step',nl:'Eerste stap'},
+  {key:'ten',    ic:'🔟', test:c=>c.totalCorrect>=10,  fr:'10 réussis',en:'10 correct',nl:'10 juist'},
+  {key:'fifty',  ic:'💪', test:c=>c.totalCorrect>=50,  fr:'50 réussis',en:'50 correct',nl:'50 juist'},
+  {key:'hundred',ic:'🏆', test:c=>c.totalCorrect>=100, fr:'100 réussis',en:'100 correct',nl:'100 juist'},
+  {key:'streak3',ic:'🔥', test:c=>c.streak>=3, fr:'3 jours de suite',en:'3-day streak',nl:'3 dagen op rij'},
+  {key:'streak7',ic:'⚡', test:c=>c.streak>=7, fr:'7 jours de suite',en:'7-day streak',nl:'7 dagen op rij'},
+  {key:'daily',  ic:'🎯', test:c=>c.todayCount>=DAILY_GOAL, fr:'Objectif du jour',en:'Daily goal',nl:'Dagdoel'},
+  {key:'lvl5',   ic:'⭐', test:c=>c.level>=5, fr:'Niveau 5',en:'Level 5',nl:'Niveau 5'},
+  {key:'exam16', ic:'🎓', test:c=>c.examBestPct>=0.8, fr:'Examen ≥ 16/20',en:'Exam ≥ 16/20',nl:'Examen ≥ 16/20'},
+  {key:'exam20', ic:'👑', test:c=>c.examBestPct>=1, fr:'20/20 parfait',en:'Perfect 20/20',nl:'20/20 perfect'},
+  {key:'unit100',ic:'✅', test:c=>c.anyUnit100, fr:'Unité à 100 %',en:'Unit at 100%',nl:'Unit op 100%'},
+  {key:'allmac', ic:'🧮', test:c=>c.macDone, fr:'MAC complété',en:'MAC complete',nl:'MAC compleet'},
+];
+let _examBestPct = +(localStorage.getItem('esther_exambest')||0);
+function setExamBest(pct){ if(pct>_examBestPct){ _examBestPct=pct; localStorage.setItem('esther_exambest',String(pct)); checkBadges(); } }
+
+function gameCtx(){
+  const totalCorrect = xpIds.size;
+  const today = dayKey(Date.now());
+  const todayCount = attempts.filter(a=>dayKey(a.ts)===today).length;
+  // any unit/chapter at 100%
+  let anyUnit100=false, macDone=true;
+  try{ const d=getExercises(); ['w1','w2','w3','w4','w5','w6'].forEach(wk=>{ const ids=(d[wk].exercises||[]).map(e=>e.id); const ok=ids.filter(id=>correctSet.has(id)).length; if(ids.length&&ok===ids.length) anyUnit100=true; if(ids.length&&ok<ids.length) macDone=false; });
+    OMI_CHAPTERS.forEach(ch=>{ const ids=ch.exercises.map(e=>e.id); const ok=ids.filter(id=>omiCorrectSet.has(id)).length; if(ids.length&&ok===ids.length) anyUnit100=true; });
+    PM_UNITS.forEach(u=>{ const ids=u.exercises.map(e=>e.id); const ok=ids.filter(id=>pmCorrectSet.has(id)).length; if(ids.length&&ok===ids.length) anyUnit100=true; });
+  }catch(e){ macDone=false; }
+  return {totalCorrect, streak:calcStreak(), todayCount, level:levelInfo(XP).level, examBestPct:_examBestPct, anyUnit100, macDone};
+}
+function checkBadges(){
+  const ctx=gameCtx(); let newly=[];
+  BADGES.forEach(b=>{ if(!badges.has(b.key) && b.test(ctx)){ badges.add(b.key); newly.push(b); } });
+  if(newly.length){ saveGame(); newly.forEach((b,i)=>setTimeout(()=>{ showToast(b.ic, (lang==='fr'?'Badge débloqué !':lang==='en'?'Badge unlocked!':'Badge ontgrendeld!'), b[lang]); chime('badge'); confetti(90); }, i*700)); }
+}
+
+let _dailyCelebrated = localStorage.getItem('esther_dailycelebrated')||'';
+function gameOnAttempt(exId, ok){
+  // SRS (Leitner)
+  const box = ok ? Math.min(5,(srs[exId]&&srs[exId].box||0)+1) : 1;
+  srs[exId] = {box, last:Date.now()};
+  const before = levelInfo(XP).level;
+  if(ok && !xpIds.has(exId)){ XP += 10; xpIds.add(exId); }
+  saveGame();
+  refreshXpChip();
+  if(ok) chime('correct');
+  const after = levelInfo(XP).level;
+  if(after>before){ setTimeout(()=>{ showToast('⭐', (lang==='fr'?'Niveau '+after+' !':lang==='en'?'Level '+after+'!':'Niveau '+after+'!'), lvlTitle(after)); chime('level'); confetti(160); }, 300); }
+  // daily goal
+  const today=dayKey(Date.now());
+  const todayCount=attempts.filter(a=>dayKey(a.ts)===today).length;
+  if(todayCount>=DAILY_GOAL && _dailyCelebrated!==today){ _dailyCelebrated=today; localStorage.setItem('esther_dailycelebrated',today); setTimeout(()=>{ showToast('🎯',(lang==='fr'?'Objectif du jour atteint !':lang==='en'?'Daily goal reached!':'Dagdoel gehaald!'),DAILY_GOAL+(lang==='fr'?' exercices 💪':lang==='en'?' exercises 💪':' oefeningen 💪')); chime('win'); confetti(120); },400); }
+  checkBadges();
+  if(currentSubject==='home'){ /* refresh handled by callers */ }
+}
+
+function startReview(){
+  const due=dueReviewIds();
+  if(!due.length) return;
+  goToExercise(due[0].id);
+  showToast('🔁', (lang==='fr'?'Révision':lang==='en'?'Review':'Herhaling'), (lang==='fr'?due.length+' exercices à revoir':lang==='en'?due.length+' to review':due.length+' te herhalen'), 2600);
+}
+function refreshXpChip(){
+  const li=levelInfo(XP);
+  const l=document.getElementById('xpChipLvl'), x=document.getElementById('xpChipXp');
+  if(l) l.textContent=li.level; if(x) x.textContent=XP+' XP';
+}
+
+// SRS due items for current exam (failed soon, or correct-but-old by box)
+function dueReviewIds(){
+  const isPm=currentExam===2;
+  const boxDays=[0,0,1,3,7,16]; // days until due per box (box1 soonest)
+  const now=Date.now(); const out=[];
+  for(const id in srs){ if(id.startsWith('lvl_')) continue;
+    const pm=/^u\d+_/.test(id); if(pm!==isPm) continue;
+    const done = isPm?pmCorrectSet.has(id):(correctSet.has(id)||omiCorrectSet.has(id));
+    const s=srs[id]; const dueAfter=(boxDays[s.box]||16)*86400000;
+    if(!done) out.push({id,ts:s.last,why:'failed'});
+    else if(now - s.last >= dueAfter) out.push({id,ts:s.last,why:'due'});
+  }
+  out.sort((a,b)=>a.ts-b.ts);
+  return out;
 }
 
 function dayKey(ts){ const d=new Date(ts); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
@@ -3893,6 +4093,51 @@ function exTitleOf(id){
   return id;
 }
 
+function gameLabels(){
+  if(lang==='fr') return {lvl:'Niveau',toNext:'XP avant le niveau',max:'Niveau max atteint ! 👑',daily:'Objectif du jour',dailyDone:'Objectif atteint ! 🎉',badges:'🏅 Tes badges',review:'🔁 À réviser',reviewSub:'Exercices ratés ou à revoir',reviewBtn:'Lancer la révision',reviewNone:'Rien à réviser — tout est frais ! ✨',cov:'🗺️ Carte de couverture',covSub:'Toutes les notions — vert = maîtrisé',covLeg:['maîtrisé','à retravailler','pas encore vu']};
+  if(lang==='en') return {lvl:'Level',toNext:'XP to next level',max:'Max level reached! 👑',daily:'Daily goal',dailyDone:'Goal reached! 🎉',badges:'🏅 Your badges',review:'🔁 To review',reviewSub:'Failed or due exercises',reviewBtn:'Start review',reviewNone:'Nothing to review — all fresh! ✨',cov:'🗺️ Coverage map',covSub:'Every notion — green = mastered',covLeg:['mastered','to work on','not seen yet']};
+  return {lvl:'Niveau',toNext:'XP tot volgend niveau',max:'Max niveau bereikt! 👑',daily:'Dagdoel',dailyDone:'Doel gehaald! 🎉',badges:'🏅 Je badges',review:'🔁 Te herhalen',reviewSub:'Foute of te herhalen oefeningen',reviewBtn:'Start herhaling',reviewNone:'Niets te herhalen — alles vers! ✨',cov:'🗺️ Dekkingskaart',covSub:'Alle begrippen — groen = beheerst',covLeg:['beheerst','te oefenen','nog niet gezien']};
+}
+function dailyRingHtml(count){
+  const GL=gameLabels(); const pct=Math.min(1,count/DAILY_GOAL); const R=26,C=2*Math.PI*R, off=C*(1-pct);
+  const done=count>=DAILY_GOAL;
+  return `<div class="stat-card daily-ring">
+    <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="${R}" fill="none" stroke="var(--border-light)" stroke-width="7"/><circle cx="32" cy="32" r="${R}" fill="none" stroke="${done?'#10b981':'#f59e0b'}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}" transform="rotate(-90 32 32)"/></svg>
+    <div class="dr-txt"><div class="n">${count}/${DAILY_GOAL}</div><div class="l">${done?GL.dailyDone:GL.daily}</div></div></div>`;
+}
+function xpCardHtml(){
+  const GL=gameLabels(); const li=levelInfo(XP);
+  return `<div class="xp-card"><div class="top"><div><span class="title">${GL.lvl} ${li.level} · ${li.title}</span></div><div class="sub">${XP} XP</div></div>
+    <div class="xp-bar"><div class="xp-fill" style="width:${li.pct}%"></div></div>
+    <div class="sub" style="margin-top:6px">${li.max?GL.max:((li.next-XP)+' '+GL.toNext+' '+(li.level+1))}</div></div>`;
+}
+function badgesHtml(){
+  const GL=gameLabels();
+  return `<div class="xp-card"><div class="title" style="margin-bottom:12px">${GL.badges} <span class="sub">(${badges.size}/${BADGES.length})</span></div>
+    <div class="badge-grid">${BADGES.map(b=>`<div class="badge-cell ${badges.has(b.key)?'got':''}"><span class="ic">${b.ic}</span><span class="bl">${b[lang]}</span></div>`).join('')}</div></div>`;
+}
+function reviewCardHtml(){
+  const GL=gameLabels(); const due=dueReviewIds();
+  return `<div class="review-card"><div class="title" style="font-weight:700">${GL.review} <span class="sub">(${due.length})</span></div>
+    <div class="sub">${GL.reviewSub}</div>
+    ${due.length?`<button class="big-btn" onclick="startReview()">${GL.reviewBtn} →</button>`:`<p class="sub" style="margin-top:8px">${GL.reviewNone}</p>`}</div>`;
+}
+function coverageHtml(){
+  const GL=gameLabels(); const pm=currentExam===2;
+  const attempted = new Set(attempts.filter(a=>!a.id.startsWith('lvl_')).map(a=>a.id));
+  const groups=[];
+  if(pm){ PM_UNITS.forEach(u=>groups.push({label:pmL(u,'title'), ids:u.exercises.map(e=>e.id), set:pmCorrectSet})); }
+  else {
+    const d=getExercises(); const t=T[lang];
+    ['w1','w2','w3','w4','w5','w6'].forEach((wk,i)=>groups.push({label:t.tabs[i], ids:(d[wk].exercises||[]).map(e=>e.id), set:correctSet}));
+    OMI_CHAPTERS.forEach(ch=>groups.push({label:omiL(ch,'title'), ids:ch.exercises.map(e=>e.id), set:omiCorrectSet}));
+  }
+  const cell=(id,set)=>{ const c = set.has(id)?'#10b981':(attempted.has(id)?'#f59e0b':'var(--border-light)'); return `<div class="cov-cell" style="background:${c}" title="${id}" onclick="goToExercise('${id}')"></div>`; };
+  const body=groups.filter(g=>g.ids.length).map(g=>{ const ok=g.ids.filter(id=>g.set.has(id)).length; return `<div class="cov-group"><h4><span>${g.label}</span><span>${ok}/${g.ids.length}</span></h4><div class="cov-cells">${g.ids.map(id=>cell(id,g.set)).join('')}</div></div>`; }).join('');
+  return `<div class="cov-wrap"><div class="title" style="font-weight:700">${GL.cov}</div><div class="sub" style="margin-bottom:12px">${GL.covSub}</div>${body}
+    <div class="cov-legend"><span><i class="cov-dot" style="background:#10b981"></i>${GL.covLeg[0]}</span><span><i class="cov-dot" style="background:#f59e0b"></i>${GL.covLeg[1]}</span><span><i class="cov-dot" style="background:var(--border-light)"></i>${GL.covLeg[2]}</span></div></div>`;
+}
+
 function buildHome(){
   const L = homeLabels();
   const area = document.getElementById('homeArea');
@@ -3953,15 +4198,16 @@ ${loginBanner}
 ${hero}
 <div class="stat-grid">
   <div class="stat-card"><div class="big">🔥 ${calcStreakFrom(sAtt)}</div><div class="lbl">${L.streak}</div></div>
-  <div class="stat-card"><div class="big">✅ ${todayAtt.length}</div><div class="lbl">${L.today}</div></div>
+  ${dailyRingHtml(todayAtt.length)}
   <div class="stat-card"><div class="big">🎯 ${acc===null?'—':acc+'%'}</div><div class="lbl">${L.acc}</div></div>
   <div class="stat-card"><div class="big">📈 ${totN?Math.round(totOk/totN*100):0}%</div><div class="lbl">${L.prog}</div></div>
 </div>
+${xpCardHtml()}
 <div class="nav-grid">${navCards}</div>
+${reviewCardHtml()}
 ${mastBlocks}
-<div class="weak-card"><h3 style="font-size:0.95rem;margin-bottom:12px">${L.weak}</h3>
-${weak.length ? weak.map(w=>`<div class="weak-item" onclick="goToExercise('${w.id}')"><span>${w.why==='failed'?'❌':'⏳'}</span><span>${exTitleOf(w.id)}</span></div>`).join('') + `<div style="font-size:0.74rem;color:var(--muted);margin-top:8px">❌ / ⏳ = ${L.weakBtn}</div>` : `<p style="color:var(--muted);font-size:0.88rem">${L.weakNone}</p>`}
-</div>`;
+${coverageHtml()}
+${badgesHtml()}`;
   // global progress bar reflects current exam home
   const gp=document.getElementById('globalProgress'); if(gp) gp.style.display='none';
 }
@@ -4736,6 +4982,8 @@ PM_EXAMS.push(...[{"key":"pe1","title_nl":"Proefexamen 1 — Process Management"
 // Init
 buildUI();
 switchExam(currentExam===2 ? 2 : 1); // restores last exam; switchExam(1) sets home
+refreshXpChip();
+if(muted){ const mb=document.getElementById('muteBtn'); if(mb) mb.textContent='🔇'; }
 updateSyncBtn();
 if(localStorage.getItem('esther_dark')==='1'){ const b=document.getElementById('darkBtn'); if(b) b.textContent='☀️'; }
 if(syncCode) syncPull().then(()=>{ if(currentSubject==='home') buildHome(); });
