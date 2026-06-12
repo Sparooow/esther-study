@@ -4336,6 +4336,14 @@ async function syncPull(){
       (data.mac||[]).forEach(id => correctSet.add(id));
       (data.omi||[]).forEach(id => omiCorrectSet.add(id));
       if(data.pm && typeof pmCorrectSet!=='undefined'){ data.pm.forEach(id=>pmCorrectSet.add(id)); localStorage.setItem('esther_pm_correct', JSON.stringify([...pmCorrectSet])); if(currentExam===2 && typeof updatePmProgress==='function') updatePmProgress(); }
+      if(data.game && typeof XP!=='undefined'){ const g=data.game;
+        XP=Math.max(XP, g.xp||0);
+        (g.xpIds||[]).forEach(id=>xpIds.add(id));
+        (g.badges||[]).forEach(b=>badges.add(b));
+        if(g.srs){ for(const k in g.srs){ if(!srs[k]||g.srs[k].last>srs[k].last) srs[k]=g.srs[k]; } }
+        if(g.exambest && g.exambest>_examBestPct){ _examBestPct=g.exambest; localStorage.setItem('esther_exambest',String(_examBestPct)); }
+        saveGame(); refreshXpChip();
+      }
       if(data.attempts){
         const seen = new Set(attempts.map(a=>a.id+'_'+a.ts));
         data.attempts.forEach(a=>{ if(!seen.has(a.id+'_'+a.ts)) attempts.push(a); });
@@ -4358,7 +4366,8 @@ async function syncPush(){
   try{
     const body = JSON.stringify([{
       code: syncCode,
-      data: { mac: [...correctSet], omi: [...omiCorrectSet], pm: (typeof pmCorrectSet!=='undefined'?[...pmCorrectSet]:[]), attempts: attempts.slice(-2000) },
+      data: { mac: [...correctSet], omi: [...omiCorrectSet], pm: (typeof pmCorrectSet!=='undefined'?[...pmCorrectSet]:[]), attempts: attempts.slice(-2000),
+        game: (typeof XP!=='undefined'?{ xp:XP, xpIds:[...xpIds], badges:[...badges], srs:srs, exambest:_examBestPct }:undefined) },
       updated_at: new Date().toISOString()
     }]);
     const res = await fetch(SB_URL + '/rest/v1/progress', {
