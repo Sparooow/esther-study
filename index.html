@@ -248,6 +248,21 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 @keyframes toastIn{from{opacity:0;transform:translateY(-14px) scale(.9)}to{opacity:1;transform:none}}
 #confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:390}
 .mute-btn{cursor:pointer}
+/* ── Open-ended questions */
+.open-input{width:100%;min-height:90px;border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Inter',sans-serif;font-size:0.92rem;background:var(--card);color:var(--text);resize:vertical;margin:4px 0 2px}
+.open-input:focus{outline:none;border-color:var(--accent)}
+.open-correction{margin-top:10px;border:1px solid var(--border-light);border-radius:12px;overflow:hidden}
+.open-model{padding:13px 16px;background:var(--success-bg);font-size:0.9rem;line-height:1.6}
+.open-points{padding:12px 16px;border-top:1px solid var(--border-light);font-size:0.88rem}
+.open-points ul{margin:6px 0 0 18px}
+.open-points li{margin-bottom:4px}
+.open-grade{padding:12px 16px;border-top:1px solid var(--border-light);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.open-grade>span{font-size:0.85rem;color:var(--muted);margin-right:4px}
+.open-grade .og{border:none;border-radius:20px;padding:7px 14px;font-weight:600;font-size:0.84rem;cursor:pointer;font-family:'Inter',sans-serif}
+.og-ok{background:var(--success-bg);color:var(--success)}
+.og-mid{background:var(--warning-bg);color:var(--warning)}
+.og-no{background:var(--error-bg);color:var(--error)}
+.badge-open{background:#7c3aed22;color:#7c3aed;border:1px solid #7c3aed55}
 /* ── Diagrams (SVG) */
 .diagram{margin:20px 0;background:var(--card2);border:1px solid var(--border-light);border-radius:14px;padding:16px 18px}
 .diagram figcaption{font-weight:600;font-size:0.92rem;margin-bottom:12px;color:var(--text)}
@@ -1481,8 +1496,16 @@ function buildExCard(ex, t){
 
  let html = `<div class="ex-header">
 <span class="ex-title">${ex.title}</span>
-<span class="badge ${diffClass}">${diffLabel}</span>${bossBadge}</div>
+<span class="badge ${diffClass}">${diffLabel}</span>${ex.type==='open'?`<span class="badge badge-open">${lang==='fr'?'Ouverte':lang==='en'?'Open':'Open'}</span>`:''}${bossBadge}</div>
 <div class="ex-text">${ex.text}</div>`;
+
+ // Open-ended question
+ if(ex.type==='open'){
+  html += openBodyHtml('mac', ex, 'var(--primary)');
+  card.innerHTML = html;
+  if(correctSet.has(ex.id)) card.classList.add('correct');
+  return card;
+ }
 
  // MCQ
  if(ex.mcq){
@@ -3282,7 +3305,7 @@ function buildLvlPmUI(){
  const panel=document.createElement('div'); panel.className='workshop-panel'+(i===0?' active':''); panel.id='lvlPanel_'+i;
  let html=`<h2 class="section-title" style="color:${PM_AC}">📋 Process Management — ${lbl[lv]}</h2><p class="section-sub">${lbl.intro[lv]}</p>`;
  PM_UNITS.forEach(u=>{
- const exs=u.exercises.filter(e=>(e.diff||'medium')===lv);
+ const exs=u.exercises.filter(e=>(e.diff||'medium')===lv && e.type!=='open');
  if(!exs.length) return;
  html+=`<div class="lvl-group-head"><span class="src-badge" style="background:${PM_AC}26;color:${PM_AC};border-color:${PM_AC}55">PM</span>${pmL(u,'title')} <span style="color:var(--muted);font-weight:400;font-size:0.85rem">· ${exs.length} ${lbl.count}</span></div>`;
  html+=exs.map(ex=>renderPmExCard(lvlClonePm(ex),0,pmLbl)).join('');
@@ -3320,7 +3343,7 @@ function buildLvlUI(){
 
  if(td.subj==='mac'){
  ['w1','w2','w3','w4','w5','w6'].forEach((wk,wi)=>{
- const exs = data[wk].exercises.filter(e=>e.diff===td.lv);
+ const exs = data[wk].exercises.filter(e=>e.diff===td.lv && e.type!=='open');
  if(!exs.length) return;
  html += `<div class="lvl-group-head"><span class="src-badge">MAC</span>${t.tabs[wi]} <span style="color:var(--muted);font-weight:400;font-size:0.85rem">· ${exs.length} ${lbl.count}</span></div>`;
  if(data[wk].theory) html += lvlTheoryToggle(lbl.theory+' — '+t.tabs[wi], data[wk].theory[lang]||data[wk].theory.nl, '#6c63ff');
@@ -3328,7 +3351,7 @@ function buildLvlUI(){
  });
  } else {
  OMI_CHAPTERS.forEach(ch=>{
- const exs = ch.exercises.filter(e=>omiDiffOf(e.id)===td.lv);
+ const exs = ch.exercises.filter(e=>omiDiffOf(e.id)===td.lv && e.type!=='open');
  if(!exs.length) return;
  const lblO = omiLabels();
  html += `<div class="lvl-group-head"><span class="src-badge" style="background:rgba(249,115,22,0.15);color:#fb923c;border-color:rgba(249,115,22,0.3)">OmI</span>${omiL(ch,'title')} <span style="color:var(--muted);font-weight:400;font-size:0.85rem">· ${exs.length} ${lbl.count}</span></div>`;
@@ -3346,7 +3369,7 @@ function buildLvlUI(){
  ['w1','w2','w3','w4','w5','w6'].forEach(wk=>{
  const mount = document.getElementById(`lvlMacGroup_${td.lv}_${wk}`);
  if(!mount) return;
- data[wk].exercises.filter(e=>e.diff===td.lv).forEach(ex=>{
+ data[wk].exercises.filter(e=>e.diff===td.lv && e.type!=='open').forEach(ex=>{
  mount.appendChild(buildExCard(lvlCloneMac(ex), t));
  });
  });
@@ -3610,6 +3633,11 @@ function buildOmiUI(){
  <div class="understand-body">${omiL(ch,'understand')}</div></div>
 ${ch.exercises.map((ex,ei)=>{
  const exText = omiEx(ex,'text');
+ if(ex.type==='open'){
+   return `<div class="exercise-card" id="omiCard_${ex.id}">
+ <div class="ex-header"><span class="ex-title">${lbl.exLabel} ${ei+1}</span><span class="badge badge-open">${lang==='fr'?'Ouverte':'Open'}</span></div>
+ <div class="ex-text">${exText}</div>${openBodyHtml('omi', ex, '#f97316')}</div>`;
+ }
  const exOptions = omiEx(ex,'options') || ex.options || ex.options_nl || [];
  const exSol = omiEx(ex,'sol');
  const exHint1 = omiEx(ex,'hint1');
@@ -4530,6 +4558,11 @@ ${u.exercises.map((ex,ei)=>renderPmExCard(ex,ei,lbl)).join('')}`;
 }
 
 function renderPmExCard(ex, ei, lbl){
+ if(ex.type==='open'){
+   return `<div class="exercise-card" id="pmCard_${ex.id}">
+ <div class="ex-header"><span class="ex-title">${lbl.exLabel} ${ei+1}</span><span class="badge badge-open">${lang==='fr'?'Ouverte':'Open'}</span></div>
+ <div class="ex-text">${pmExL(ex,'text')}</div>${openBodyHtml('pm', ex, PM_AC)}</div>`;
+ }
  const h1=pmExL(ex,'hint1'), h2=pmExL(ex,'hint2');
  let body;
  if(ex.type==='numeric' && ex.inputs && ex.inputs.length){
@@ -4618,6 +4651,61 @@ function updatePmProgress(){
  if(lblc) lblc.textContent=done+'/'+total; if(fill) fill.style.width=(total?done/total*100:0)+'%';
  if(lbl) lbl.textContent=lang==='fr'?'Process Management':lang==='en'?'Process Management':'Process Management';
  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Open-ended questions — type 'open': free-text answer + model answer +
+// key-points checklist + self-grading (feeds progress / XP / SRS)
+// ═══════════════════════════════════════════════════════════════════
+function openLabels(){
+  if(lang==='fr') return {ph:'Écris ta réponse ici…',reveal:'Voir la correction',reset:'Effacer',model:'✍️ Réponse modèle',points:'✅ Points clés à mentionner',self:'Évalue ta réponse :',knew:'Je savais',partly:'En partie',no:'Pas su',fbOk:'✓ Bien ! Compté comme maîtrisé.',fbPartly:'🟡 À revoir — on le ressortira en révision.',fbNo:'❌ Pas grave — il reviendra en révision.'};
+  if(lang==='en') return {ph:'Write your answer here…',reveal:'Show the correction',reset:'Clear',model:'✍️ Model answer',points:'✅ Key points to mention',self:'Grade your answer:',knew:'I knew it',partly:'Partly',no:'Didn\'t know',fbOk:'✓ Nice! Counted as mastered.',fbPartly:'🟡 Review it — it\'ll come back.',fbNo:'❌ No worries — it\'ll come back in review.'};
+  return {ph:'Schrijf hier je antwoord…',reveal:'Toon de correctie',reset:'Wissen',model:'✍️ Modelantwoord',points:'✅ Kernpunten om te vermelden',self:'Beoordeel je antwoord:',knew:'Ik wist het',partly:'Deels',no:'Niet gekend',fbOk:'✓ Goed! Telt als beheerst.',fbPartly:'🟡 Nog herhalen — komt terug.',fbNo:'❌ Geen zorgen — komt terug in herhaling.'};
+}
+function openL(ex,f){ const k=f+'_'+lang; return ex[k]!==undefined?ex[k]:(ex[f+'_nl']||(ex[f]&&ex[f][lang])||ex[f]||''); }
+function saveOpenAns(id,val){ window['openAns_'+id]=val; }
+function openBodyHtml(subject, ex, accent){
+  const L=openLabels(); const id=ex.id;
+  const model=openL(ex,'model'); const pts=openL(ex,'points')||[];
+  return `
+  <textarea class="open-input" id="open_${subject}_${id}" rows="4" placeholder="${L.ph}" oninput="saveOpenAns('${id}',this.value)">${(window['openAns_'+id]||'').replace(/</g,'&lt;')}</textarea>
+  <div class="btn-row">
+    <button class="btn" style="background:${accent}" onclick="revealOpen('${subject}','${id}')">${L.reveal}</button>
+    <button class="btn btn-reset" onclick="resetOpen('${subject}','${id}')">${L.reset}</button>
+  </div>
+  <div class="open-correction" id="opencorr_${subject}_${id}" style="display:none">
+    <div class="open-model"><strong>${L.model}</strong><br>${model}</div>
+    <div class="open-points"><strong>${L.points}</strong><ul>${(Array.isArray(pts)?pts:[]).map(p=>`<li>${p}</li>`).join('')}</ul></div>
+    <div class="open-grade"><span>${L.self}</span>
+      <button class="og og-ok" onclick="gradeOpen('${subject}','${id}',2)">✅ ${L.knew}</button>
+      <button class="og og-mid" onclick="gradeOpen('${subject}','${id}',1)">🟡 ${L.partly}</button>
+      <button class="og og-no" onclick="gradeOpen('${subject}','${id}',0)">❌ ${L.no}</button>
+    </div>
+  </div>
+  <div class="feedback" id="openfb_${subject}_${id}"></div>`;
+}
+const OPEN_SETS={ mac:()=>correctSet, omi:()=>omiCorrectSet, pm:()=>pmCorrectSet };
+const OPEN_CARDPFX={ mac:'card_', omi:'omiCard_', pm:'pmCard_' };
+function revealOpen(subject,id){ const c=document.getElementById('opencorr_'+subject+'_'+id); if(c) c.style.display=''; }
+function resetOpen(subject,id){
+  window['openAns_'+id]=''; const ta=document.getElementById('open_'+subject+'_'+id); if(ta) ta.value='';
+  const c=document.getElementById('opencorr_'+subject+'_'+id); if(c) c.style.display='none';
+  const fb=document.getElementById('openfb_'+subject+'_'+id); if(fb){fb.textContent='';fb.className='feedback';}
+  OPEN_SETS[subject]().delete(id);
+  const card=document.getElementById(OPEN_CARDPFX[subject]+id); if(card) card.classList.remove('correct','wrong');
+  ({mac:saveMacProgress,omi:saveOmiProgress,pm:savePmProgress})[subject]();
+  ({mac:updateProgress,omi:updateOmiProgress,pm:updatePmProgress})[subject]();
+}
+function gradeOpen(subject,id,level){
+  const ok=level===2; const set=OPEN_SETS[subject]();
+  if(ok) set.add(id); else set.delete(id);
+  recordAttempt(id, ok);
+  ({mac:saveMacProgress,omi:saveOmiProgress,pm:savePmProgress})[subject]();
+  const card=document.getElementById(OPEN_CARDPFX[subject]+id);
+  if(card){ card.classList.toggle('correct',ok); card.classList.toggle('wrong',level===0); }
+  const L=openLabels(); const fb=document.getElementById('openfb_'+subject+'_'+id);
+  if(fb){ fb.textContent= ok?L.fbOk:level===1?L.fbPartly:L.fbNo; fb.className='feedback show '+(ok?'ok':'bad'); }
+  ({mac:updateProgress,omi:updateOmiProgress,pm:updatePmProgress})[subject]();
 }
 
 // ═══════════════════════════════════════════════════════════════════
