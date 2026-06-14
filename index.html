@@ -5156,6 +5156,26 @@ PM_EXAMS.push(...[{"key":"pe1","title_nl":"Proefexamen 1 — Process Management"
  EXAMS.forEach(ex=>ex.questions=ex.questions.map(q=>QFIX[q.id]?QFIX[q.id]:q));
 })();
 
+
+// ── Fix: de-skew MCQ answers (were biased to option A). Deterministic per-id shuffle. ──
+(function(){
+  function hsh(s){ let x=2166136261>>>0; for(let i=0;i<s.length;i++){ x^=s.charCodeAt(i); x=Math.imul(x,16777619); } return x>>>0; }
+  function shuffleEx(ex){
+    if(!ex || ex.__shuf || ex.type==='open' || ex.type==='numeric') return;
+    if(typeof ex.correct!=='number') return;
+    const base=ex.options_nl||ex.options_fr||ex.options_en; if(!Array.isArray(base)||base.length<2) return;
+    const n=base.length; const idx=Array.from({length:n},(_,i)=>i);
+    let seed=hsh(ex.id)||1; const rnd=()=>{ seed=(Math.imul(seed,1103515245)+12345)>>>0; return seed/4294967296; };
+    for(let i=n-1;i>0;i--){ const j=Math.floor(rnd()*(i+1)); const t=idx[i]; idx[i]=idx[j]; idx[j]=t; }
+    ['options_nl','options_en','options_fr','options'].forEach(k=>{ if(Array.isArray(ex[k]) && ex[k].length===n) ex[k]=idx.map(i=>ex[k][i]); });
+    ex.correct = idx.indexOf(ex.correct);
+    ex.__shuf=true;
+  }
+  try{ PM_UNITS.forEach(u=>u.exercises.forEach(shuffleEx)); }catch(e){}
+  try{ OMI_CHAPTERS.forEach(c=>c.exercises.forEach(shuffleEx)); }catch(e){}
+  try{ [...EXAMS,...PM_EXAMS].forEach(ex=>ex.questions.forEach(shuffleEx)); }catch(e){}
+})();
+
 // Init
 buildUI();
 switchExam(currentExam===2 ? 2: 1); // pre-build exam chrome/data
