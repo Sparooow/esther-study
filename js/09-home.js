@@ -3,7 +3,13 @@
 // countdowns + adaptive daily plan (recomputed every visit)
 // ═══════════════════════════════════════════════════════════════════
 let currentView = 'landing';
-function examDates(){ return JSON.parse(localStorage.getItem('esther_examdates')||'null')||{e1:'2026-07-02',e2:'2026-06-18'}; }
+function examDates(){
+ const d = JSON.parse(localStorage.getItem('esther_examdates')||'null') || {e1:'2026-07-02',e2:'2026-06-18'};
+ // one-time migration: the MAC/OmI exam moved from 28 June to 2 July. Self-heals even if an
+ // old value comes back from the cloud on sync (re-applied on every read, then pushed back).
+ if(d.e1==='2026-06-28'){ d.e1='2026-07-02'; localStorage.setItem('esther_examdates',JSON.stringify(d)); if(typeof schedulePush==='function') schedulePush(); }
+ return d;
+}
 function setExamDate(which){
  const d=examDates(); const cur=d[which];
  const msg=lang==='fr'?'Date de l\'examen (AAAA-MM-JJ):':lang==='en'?'Exam date (YYYY-MM-DD):':'Examendatum (JJJJ-MM-DD):';
