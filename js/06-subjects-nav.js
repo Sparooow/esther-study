@@ -258,8 +258,8 @@ function renderLvlOmiEx(ch, ex, lblO){
 }
 
 function switchLvlTab(idx){
- document.querySelectorAll('#lvlTabsRow.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
- document.querySelectorAll('#lvlArea.workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+ document.querySelectorAll('#lvlTabsRow .tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+ document.querySelectorAll('#lvlArea .workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
 }
 
 function updateLvlProgress(){

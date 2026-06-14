@@ -123,8 +123,8 @@ function resetPmEx(exId){
 }
 
 function switchPmTab(idx){
- document.querySelectorAll('#pmTabsRow.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
- document.querySelectorAll('#exam2Area.workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+ document.querySelectorAll('#pmTabsRow .tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+ document.querySelectorAll('#exam2Area .workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
 }
 
 function updatePmProgress(){

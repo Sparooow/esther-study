@@ -147,8 +147,8 @@ function resetExam(key){
 }
 
 function switchTestTab(idx){
- document.querySelectorAll('#testTabsRow.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
- document.querySelectorAll('#testArea.workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+ document.querySelectorAll('#testTabsRow .tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+ document.querySelectorAll('#testArea .workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
 }
 
 function updateTestProgress(){
@@ -251,8 +251,8 @@ function revealOmiHint(exId, n){
 }
 
 function switchOmiTab(idx){
- document.querySelectorAll('#omiTabsRow.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
- document.querySelectorAll('#omiArea.workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
+ document.querySelectorAll('#omiTabsRow .tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+ document.querySelectorAll('#omiArea .workshop-panel').forEach((p,i)=>p.classList.toggle('active',i===idx));
 }
 
 function selectOmiMcq(exId, idx){
