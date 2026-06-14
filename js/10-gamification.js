@@ -80,9 +80,9 @@ function schedulePush(){
 }
 
 function syncLogin(){
- const msg = lang==='fr' ? 'Choisis ton code de synchronisation (ex: esther2026).\nUtilise le même code sur ton PC et ton téléphone pour partager ta progression.'
-: lang==='en' ? 'Choose your sync code (e.g. esther2026).\nUse the same code on your PC and phone to share your progress.'
-: 'Kies je synchronisatiecode (bv. esther2026).\nGebruik dezelfde code op je pc en telefoon om je voortgang te delen.';
+ const msg = lang==='fr' ? 'Choisis ton code de synchronisation (ex: iloveesther).\nUtilise le même code sur ton PC et ton téléphone pour partager ta progression.'
+: lang==='en' ? 'Choose your sync code (e.g. iloveesther).\nUse the same code on your PC and phone to share your progress.'
+: 'Kies je synchronisatiecode (bv. iloveesther).\nGebruik dezelfde code op je pc en telefoon om je voortgang te delen.';
  const code = prompt(msg, syncCode);
  if(code === null) return;
  syncCode = code.trim();

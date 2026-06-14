@@ -3,7 +3,7 @@
 // countdowns + adaptive daily plan (recomputed every visit)
 // ═══════════════════════════════════════════════════════════════════
 let currentView = 'landing';
-function examDates(){ return JSON.parse(localStorage.getItem('esther_examdates')||'null')||{e1:'2026-06-28',e2:'2026-06-18'}; }
+function examDates(){ return JSON.parse(localStorage.getItem('esther_examdates')||'null')||{e1:'2026-07-02',e2:'2026-06-18'}; }
 function setExamDate(which){
  const d=examDates(); const cur=d[which];
  const msg=lang==='fr'?'Date de l\'examen (AAAA-MM-JJ):':lang==='en'?'Exam date (YYYY-MM-DD):':'Examendatum (JJJJ-MM-DD):';
@@ -72,7 +72,7 @@ function buildLanding(){
  }).join('');
  const loginBanner = syncCode ? '': (()=>{ const L=homeLabels(); return `<div class="login-banner">
  <div class="login-banner-txt"><div class="lt">${L.loginTitle}</div><div class="ls">${L.loginSub}</div></div>
- <div class="login-banner-row"><input id="loginCodeInput" class="login-input" type="text" value="esther2026" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()"><button class="login-go" onclick="submitSyncCode()">${L.loginBtn}</button></div></div>`; })();
+ <div class="login-banner-row"><input id="loginCodeInput" class="login-input" type="text" value="iloveesther" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()"><button class="login-go" onclick="submitSyncCode()">${L.loginBtn}</button></div></div>`; })();
  area.innerHTML = `
 ${loginBanner}
 <div class="land-hero"><h1>${LL.hi}</h1><p>${LL.sub}</p></div>
@@ -150,7 +150,7 @@ function buildHome(){
 <div class="login-banner">
  <div class="login-banner-txt"><div class="lt">${L.loginTitle}</div><div class="ls">${L.loginSub}</div></div>
  <div class="login-banner-row">
- <input id="loginCodeInput" class="login-input" type="text" value="esther2026" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()">
+ <input id="loginCodeInput" class="login-input" type="text" value="iloveesther" placeholder="${L.loginPlaceholder}" onkeydown="if(event.key==='Enter')submitSyncCode()">
  <button class="login-go" onclick="submitSyncCode()">${L.loginBtn}</button></div></div>`;
 
  area.innerHTML = `

@@ -174,18 +174,18 @@ main{max-width:900px;margin:0 auto;padding:32px 20px}
 .exam-dash:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.18)}
 .exam-dash.e2{background:linear-gradient(135deg,#0d9488,#0891b2)}
 .exam-dash.e1{background:linear-gradient(135deg,#D4537E,#f97316)}
-.exam-dash.ed-top{display:flex;justify-content:space-between;align-items:flex-start}
-.exam-dash.ed-name{font-size:1.15rem;font-weight:700}
-.exam-dash.ed-sub{font-size:0.8rem;opacity:.9}
-.exam-dash.ed-cd{text-align:right}
-.exam-dash.ed-cd.d{font-size:1.9rem;font-weight:800;line-height:1}
-.exam-dash.ed-cd.l{font-size:0.72rem;opacity:.9}
-.exam-dash.ed-bar{height:9px;background:rgba(255,255,255,.28);border-radius:8px;margin:14px 0 6px;overflow:hidden}
-.exam-dash.ed-bar i{display:block;height:9px;border-radius:8px;background:#fff}
-.exam-dash.ed-stats{display:flex;justify-content:space-between;font-size:0.8rem;opacity:.95}
-.exam-dash.ed-plan{margin-top:12px;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 12px;font-size:0.85rem}
-.exam-dash.ed-plan b{font-size:1.05rem}
-.exam-dash.ed-go{margin-top:12px;display:inline-block;background:#fff;color:#222;font-weight:700;font-size:0.85rem;padding:7px 16px;border-radius:20px}
+.exam-dash .ed-top{display:flex;justify-content:space-between;align-items:flex-start}
+.exam-dash .ed-name{font-size:1.15rem;font-weight:700}
+.exam-dash .ed-sub{font-size:0.8rem;opacity:.9}
+.exam-dash .ed-cd{text-align:right}
+.exam-dash .ed-cd .d{font-size:1.9rem;font-weight:800;line-height:1}
+.exam-dash .ed-cd .l{font-size:0.72rem;opacity:.9}
+.exam-dash .ed-bar{height:9px;background:rgba(255,255,255,.28);border-radius:8px;margin:14px 0 6px;overflow:hidden}
+.exam-dash .ed-bar i{display:block;height:9px;border-radius:8px;background:#fff}
+.exam-dash .ed-stats{display:flex;justify-content:space-between;font-size:0.8rem;opacity:.95}
+.exam-dash .ed-plan{margin-top:12px;background:rgba(255,255,255,.16);border-radius:12px;padding:10px 12px;font-size:0.85rem}
+.exam-dash .ed-plan b{font-size:1.05rem}
+.exam-dash .ed-go{margin-top:12px;display:inline-block;background:#fff;color:#222;font-weight:700;font-size:0.85rem;padding:7px 16px;border-radius:20px}
 .plan-banner{background:var(--card);border:1px solid var(--border-light);border-radius:16px;padding:18px 20px;margin-bottom:20px}
 .plan-banner h3{font-size:1rem;margin-bottom:10px}
 .plan-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border-light)}
