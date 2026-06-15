@@ -8,6 +8,6 @@
   if(muted){ const mb=document.getElementById('muteBtn'); if(mb) mb.textContent='🔇'; }
   updateSyncBtn();
   if(localStorage.getItem('esther_dark')==='1'){ const b=document.getElementById('darkBtn'); if(b) b.textContent='☀️'; }
-  if(syncCode) syncPull().then(()=>{ if(currentSubject==='home') buildHome(); });
+  if(syncCode){ syncPull().then(()=>{ if(currentSubject==='home') buildHome(); }); if(typeof logEvent==='function') logEvent('login', {}); }
   if('serviceWorker' in navigator && location.protocol==='https:'){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 })();

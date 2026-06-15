@@ -127,6 +127,7 @@ function gradeExam(key){
  if(resEl) resEl.innerHTML = `<div class="exam-result"><div class="big-score">${score}/${total}</div><div>${lbl.grade(ratio)}</div></div>`;
  resEl.scrollIntoView({behavior:'smooth'});
  setExamBest(ratio);
+ if(typeof logEvent==='function') logEvent('exam', { ref: key, subject: 'exam', meta: { score: score, total: total, pct: Math.round(ratio*100) } });
  if(ratio>=0.5){ confetti(ratio>=0.85?180:110); chime('win'); }
 }
 

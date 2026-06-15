@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Esther — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#D4537E;--accent2:#0d9488;--bg:#f6f7f9;--card:#fff;--ink:#1f2330;--muted:#6b7280;--border:#e6e8ee;--ok:#10b981;--bad:#ef4444;--warn:#f59e0b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+.logo{font-weight:700;font-size:1.15rem}.logo small{color:var(--muted);font-weight:500;font-size:.8rem;margin-left:6px}
+.muted{color:var(--muted)}
+.wrap{max-width:1100px;margin:0 auto;padding:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+.card .big{font-size:1.8rem;font-weight:700}.card .lbl{color:var(--muted);font-size:.8rem;margin-top:2px}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);font-size:.86rem}
+th{background:#fafbfc;color:var(--muted);font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:none}
+tr.urow{cursor:pointer}tr.urow:hover{background:#fafbfc}tr.urow.sel{background:#fdeef4}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.on{background:var(--ok);box-shadow:0 0 0 3px rgba(16,185,129,.18)}.off{background:#c7cbd4}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.74rem;font-weight:600}
+.pill.mac{background:#fdeef4;color:var(--accent)}.pill.omi{background:#eef2ff;color:#4f46e5}.pill.pm{background:#e6f7f4;color:var(--accent2)}
+.section-title{font-weight:700;font-size:1.05rem;margin:24px 0 12px}
+.detail{background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:14px}
+.bars{display:grid;gap:10px}
+.barrow{display:grid;grid-template-columns:90px 1fr 70px;align-items:center;gap:10px;font-size:.82rem}
+.bar{height:10px;background:#eef0f4;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;border-radius:6px}
+.days{display:flex;gap:5px;align-items:flex-end;height:90px;margin-top:6px}
+.day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.day .col{width:100%;background:#eef0f4;border-radius:4px 4px 0 0;position:relative;display:flex;align-items:flex-end}
+.day .col i{width:100%;background:var(--accent);border-radius:4px 4px 0 0}
+.day .col .ok{position:absolute;bottom:0;width:100%;background:var(--ok);border-radius:4px 4px 0 0}
+.day .lab{font-size:.62rem;color:var(--muted)}
+.timeline{max-height:340px;overflow:auto;margin-top:8px}
+.ev{display:flex;gap:9px;align-items:baseline;padding:7px 4px;border-bottom:1px solid #f1f2f5;font-size:.83rem}
+.ev .t{color:var(--muted);font-size:.72rem;white-space:nowrap;min-width:64px}
+.ev .ico{width:18px;text-align:center}
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:20}
+.gate .box{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;width:320px;text-align:center}
+.gate input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin:14px 0;font-size:1rem}
+.gate button,.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 18px;font-weight:600;cursor:pointer;font-size:.9rem}
+.refresh{font-size:.78rem;color:var(--muted)}
+.live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+a.back{color:var(--accent);cursor:pointer;font-size:.85rem;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+ <div class="box">
+  <div class="logo">📊 Esther — Admin</div>
+  <input id="pw" type="password" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter')tryAuth()">
+  <button onclick="tryAuth()">Entrer</button>
+  <div id="pwErr" class="muted" style="margin-top:10px;font-size:.8rem"></div>
+ </div>
+</div>
+<header>
+ <div class="logo">📊 Esther <small>tableau de bord admin</small></div>
+ <div class="refresh"><span class="live"></span><span id="refreshLbl">…</span> · <a class="back" onclick="logout()">déconnexion</a></div>
+</header>
+<div class="wrap" id="app" style="display:none">
+ <div class="cards" id="overview"></div>
+ <div class="section-title">Utilisateurs</div>
+ <table id="usersTbl"><thead><tr><th>Code</th><th>État</th><th>Dernière activité</th><th>Niveau</th><th>Maîtrise</th><th>Aujourd'hui</th><th>Total actions</th></tr></thead><tbody id="usersBody"></tbody></table>
+ <div id="detailWrap"></div>
+</div>
+<script src="js/admin.js"></script>
+</body>
+</html>

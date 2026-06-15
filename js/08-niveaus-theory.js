@@ -66,6 +66,7 @@ function recordAttempt(exId, ok){
  if(attempts.length>3000) attempts = attempts.slice(-3000);
  localStorage.setItem('esther_attempts', JSON.stringify(attempts));
  gameOnAttempt(exId, !!ok);
+ if(typeof logEvent==='function') logEvent('answer', { ref: exId, ok: !!ok });
  if(typeof schedulePush==='function') schedulePush();
 }
 
