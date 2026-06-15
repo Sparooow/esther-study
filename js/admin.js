@@ -19,12 +19,31 @@ function tryAuth(){
   else document.getElementById('pwErr').textContent = 'Mot de passe incorrect';
 }
 function logout(){ localStorage.removeItem('esther_admin_ok'); location.reload(); }
+let sbClient = null;
 function showApp(){
   document.getElementById('gate').style.display='none';
   document.getElementById('app').style.display='';
   loadTotals();
-  tick();
-  setInterval(tick, 10000); // poll every 10s
+  tick();                                  // initial full load
+  setupRealtime();                         // live updates (Supabase Realtime)
+  setInterval(renderOnly, 15000);          // re-evaluate "online" aging (no fetch)
+  setInterval(tick, 90000);                // safety re-sync in case the socket drops
+}
+function setRT(txt){ const el=document.getElementById('refreshLbl'); if(el) el.textContent=txt; }
+function flashLive(){ const el=document.querySelector('header .live'); if(el){ el.style.transform='scale(1.8)'; setTimeout(()=>el.style.transform='',250); } }
+function setupRealtime(){
+  try{
+    if(!window.supabase || !supabase.createClient){ setRT('temps réel indisponible — secours toutes les 90 s'); setInterval(tick,10000); return; }
+    sbClient = supabase.createClient(SB_URL, SB_KEY);
+    sbClient.channel('admin-live')
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'events' }, p=>{
+        if(p.new){ lastData.events.unshift(p.new); if(lastData.events.length>4000) lastData.events.pop(); render(); flashLive(); }
+      })
+      .on('postgres_changes', { event:'*', schema:'public', table:'presence' }, p=>{
+        const row=p.new; if(row&&row.code){ const i=lastData.presence.findIndex(x=>x.code===row.code); if(i>=0) lastData.presence[i]=row; else lastData.presence.push(row); renderOnly(); }
+      })
+      .subscribe(st=>{ setRT(st==='SUBSCRIBED' ? 'temps réel' : 'connexion… ('+st+')'); });
+  }catch(e){ setRT('temps réel indisponible'); }
 }
 
 // ── helpers ──
@@ -48,8 +67,8 @@ async function loadTotals(){
 }
 
 // ── data load + render ──
+function renderOnly(){ render(); }   // re-render from cached data (online aging), no fetch
 function tick(){
-  document.getElementById('refreshLbl').textContent = 'MAJ ' + new Date().toLocaleTimeString('fr-FR');
   Promise.all([
     fetch(SB_URL+'/rest/v1/presence?select=code,last_seen',{headers:H}).then(r=>r.json()).catch(()=>[]),
     fetch(SB_URL+'/rest/v1/progress?select=code,data,updated_at',{headers:H}).then(r=>r.json()).catch(()=>[]),
@@ -155,6 +174,8 @@ function detailHtml(code){
       <div class="barrow"><span>Examen blanc</span><span class="muted">meilleur score</span><span style="text-align:right"><strong>${examBest}</strong></span></div>
       <div class="barrow"><span>Badges</span><span class="muted">débloqués</span><span style="text-align:right"><strong>🏅 ${badges}</strong></span></div>
     </div>
+    <div class="section-title" style="font-size:.95rem">📊 Progression cumulée <span class="muted" style="font-weight:400">(<span style="color:#9aa1ad">gris</span> = exercices faits · <span style="color:var(--ok)">vert</span> = bonnes réponses)</span></div>
+    ${cumChart(evs)}
     <div class="section-title" style="font-size:.95rem">📈 Activité par jour (14 derniers jours · <span style="color:var(--ok)">vert</span> = corrects)</div>
     <div class="days">${daysHtml}</div>
     <div class="section-title" style="font-size:.95rem"><span class="live"></span>En direct — dernières actions</div>
@@ -162,6 +183,32 @@ function detailHtml(code){
   </div>`;
 }
 function bar(name,val,tot,col){ const pct=tot?Math.round(val/tot*100):0; return `<div class="barrow"><span>${name}</span><div class="bar"><i style="width:${pct}%;background:${col}"></i></div><span style="text-align:right">${val}/${tot}</span></div>`; }
+// Cumulative progression: running total of answers (grey) and correct answers (green) over time.
+function cumChart(evs){
+  const ans = evs.filter(e=>e.type==='answer').slice().sort((a,b)=>new Date(a.ts)-new Date(b.ts));
+  if(!ans.length) return '<div class="muted" style="padding:10px 0">Pas encore de données — la courbe se remplit dès les premières réponses.</div>';
+  const perDay={}; ans.forEach(e=>{ const k=dayKey(e.ts); (perDay[k]=perDay[k]||{t:0,c:0}); perDay[k].t++; if(e.ok)perDay[k].c++; });
+  const days=[]; const start=new Date(dayKey(ans[0].ts)+'T00:00:00'); const end=new Date(todayKey()+'T00:00:00');
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)) days.push(dayKey(d));
+  let ct=0,cc=0; const T=[],C=[];
+  days.forEach(k=>{ if(perDay[k]){ ct+=perDay[k].t; cc+=perDay[k].c; } T.push(ct); C.push(cc); });
+  const W=560,Hh=150,pad=26, n=days.length, maxY=Math.max(1,ct);
+  const x=i=> pad + (n<=1?(W-2*pad)/2:i/(n-1)*(W-2*pad));
+  const y=v=> Hh-pad - v/maxY*(Hh-2*pad);
+  const line=p=>p.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  const area='M'+x(0).toFixed(1)+' '+y(0).toFixed(1)+' '+C.map((v,i)=>'L'+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ')+' L'+x(n-1).toFixed(1)+' '+y(0).toFixed(1)+' Z';
+  const gl=[0,Math.round(maxY/2),maxY].map(v=>`<line x1="${pad}" y1="${y(v)}" x2="${W-pad}" y2="${y(v)}" stroke="#eef0f4"/><text x="4" y="${(y(v)+3).toFixed(1)}" font-size="9" fill="#9aa1ad">${v}</text>`).join('');
+  const dot=(p,col)=>`<circle cx="${x(n-1).toFixed(1)}" cy="${y(p[n-1]).toFixed(1)}" r="3.5" fill="${col}"/>`;
+  return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:auto;max-height:170px">
+    ${gl}
+    <path d="${area}" fill="rgba(16,185,129,.13)"/>
+    <path d="${line(T)}" fill="none" stroke="#9aa1ad" stroke-width="2"/>
+    <path d="${line(C)}" fill="none" stroke="#10b981" stroke-width="2.5"/>
+    ${dot(T,'#9aa1ad')}${dot(C,'#10b981')}
+    <text x="${pad}" y="${Hh-7}" font-size="10" fill="#6b7280">${days[0].slice(5)}</text>
+    <text x="${W-pad}" y="${Hh-7}" font-size="10" fill="#6b7280" text-anchor="end">${days[n-1].slice(5)}</text>
+  </svg>`;
+}
 function subjLabel(s){ return {mac:'<span class="pill mac">MAC</span>',omi:'<span class="pill omi">OmI</span>',pm:'<span class="pill pm">PM</span>',exam:'🎓 Exam',open:'✍️ Ouverte'}[s]||(s||''); }
 
 // ── boot ──
