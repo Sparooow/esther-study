@@ -70,7 +70,7 @@ async function loadTotals(){
 function renderOnly(){ render(); }   // re-render from cached data (online aging), no fetch
 function tick(){
   Promise.all([
-    fetch(SB_URL+'/rest/v1/presence?select=code,last_seen',{headers:H}).then(r=>r.json()).catch(()=>[]),
+    fetch(SB_URL+'/rest/v1/presence?select=code,last_seen,view,detail,scroll',{headers:H}).then(r=>r.json()).catch(()=>[]),
     fetch(SB_URL+'/rest/v1/progress?select=code,data,updated_at',{headers:H}).then(r=>r.json()).catch(()=>[]),
     fetch(SB_URL+'/rest/v1/events?select=code,ts,type,subject,ref,ok,meta&order=ts.desc&limit=3000',{headers:H}).then(r=>r.json()).catch(()=>[])
   ]).then(([presence,progress,events])=>{
@@ -124,7 +124,20 @@ function render(){
     </tr>`;
   }).join('') || '<tr><td colspan="7" class="muted">Aucun utilisateur synchronisé pour le moment.</td></tr>';
 
+  renderLiveNow(codes);
   document.getElementById('detailWrap').innerHTML = SELECTED ? detailHtml(SELECTED) : '';
+}
+function presenceOf(code){ return lastData.presence.find(x=>x.code===code) || null; }
+function locStr(p){ if(!p||!p.view) return ''; return esc(p.view) + (p.detail?' <span class="det">· '+esc(p.detail)+'</span>':''); }
+function renderLiveNow(codes){
+  const online = codes.filter(isOnline);
+  const el = document.getElementById('liveNow');
+  if(!online.length){ el.innerHTML=''; return; }
+  el.innerHTML = '<div class="lnow"><div style="font-weight:700;margin-bottom:4px"><span class="live"></span>En ce moment</div>' +
+    online.map(code=>{ const p=presenceOf(code)||{}; const sc=(p.scroll!=null?p.scroll:0);
+      return `<div class="row"><strong>${esc(code)}</strong> est sur <span class="where">${locStr(p)||'—'}</span>
+        <div class="sbar" title="défilement ${sc}%"><i style="width:${sc}%"></i></div><span class="muted">défilé ${sc}%</span></div>`;
+    }).join('') + '</div>';
 }
 function card(big,lbl){ return `<div class="card"><div class="big">${big}</div><div class="lbl">${lbl}</div></div>`; }
 function level(xp){ xp=xp||0; let lvl=1, need=100; while(xp>=need){ lvl++; xp-=need; need=Math.round(need*1.35); } return lvl; }
@@ -164,12 +177,16 @@ function detailHtml(code){
     if(e.type==='answer'){ ico=e.ok?'✅':'❌'; txt=`${subjLabel(e.subject)} — <code>${esc(e.ref)}</code>`; }
     else if(e.type==='exam'){ ico='🎓'; txt=`Examen blanc <code>${esc(e.ref)}</code> — <strong>${e.meta&&e.meta.pct!=null?e.meta.pct+'%':''}</strong>`; }
     else if(e.type==='login'){ ico='🔑'; txt='Connexion / ouverture'; }
+    else if(e.type==='nav'){ ico='📖'; txt='Navigation → <strong>'+esc(e.ref)+'</strong>'; }
     else { txt=esc(e.type); }
     return `<div class="ev"><span class="t">${ago(e.ts)}</span><span class="ico">${ico}</span><span>${txt}</span></div>`;
   }).join('') || '<div class="muted" style="padding:10px">Aucune action enregistrée encore.</div>';
 
+  const p = presenceOf(code);
+  const nowBox = (p && p.view && isOnline(code)) ? `<div class="nowbox"><div class="muted" style="font-size:.78rem"><span class="live"></span>EN CE MOMENT</div><div class="big">${locStr(p)}</div><div class="sbar" style="max-width:100%;margin-top:8px"><i style="width:${p.scroll||0}%"></i></div><div class="muted" style="font-size:.76rem;margin-top:3px">défilement ${p.scroll||0}% · vu ${ago(p.last_seen)}</div></div>` : '';
   return `<div class="section-title">👤 ${esc(code)} <a class="back" style="font-weight:400;font-size:.8rem" onclick="selectUser('${esc(code)}')">✕ fermer</a></div>
   <div class="detail">
+    ${nowBox}
     <div class="bars">${bars}
       <div class="barrow"><span>Examen blanc</span><span class="muted">meilleur score</span><span style="text-align:right"><strong>${examBest}</strong></span></div>
       <div class="barrow"><span>Badges</span><span class="muted">débloqués</span><span style="text-align:right"><strong>🏅 ${badges}</strong></span></div>

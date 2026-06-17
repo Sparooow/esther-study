@@ -49,6 +49,12 @@ tr.urow{cursor:pointer}tr.urow:hover{background:#fafbfc}tr.urow.sel{background:#
 .live{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-right:5px;animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 a.back{color:var(--accent);cursor:pointer;font-size:.85rem;text-decoration:none}
+.lnow{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #c7ebdd;border-radius:14px;padding:14px 16px;margin-bottom:20px}
+.lnow .row{display:flex;align-items:center;gap:10px;padding:5px 0;flex-wrap:wrap}
+.lnow .where{font-weight:600}.lnow .det{color:var(--muted)}
+.sbar{flex:1;min-width:120px;max-width:260px;height:8px;background:#d7ece4;border-radius:6px;overflow:hidden}.sbar i{display:block;height:100%;background:var(--accent2);border-radius:6px}
+.nowbox{background:#f0fdf9;border:1px solid #bfe9dc;border-radius:12px;padding:14px;margin-bottom:14px}
+.nowbox .big{font-size:1.05rem;font-weight:700}
 </style>
 </head>
 <body>
@@ -66,6 +72,7 @@ a.back{color:var(--accent);cursor:pointer;font-size:.85rem;text-decoration:none}
 </header>
 <div class="wrap" id="app" style="display:none">
  <div class="cards" id="overview"></div>
+ <div id="liveNow"></div>
  <div class="section-title">Utilisateurs</div>
  <table id="usersTbl"><thead><tr><th>Code</th><th>État</th><th>Dernière activité</th><th>Niveau</th><th>Maîtrise</th><th>Aujourd'hui</th><th>Total actions</th></tr></thead><tbody id="usersBody"></tbody></table>
  <div id="detailWrap"></div>
