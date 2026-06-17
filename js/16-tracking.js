@@ -59,12 +59,24 @@ function currentLocation(){
 }
 function _scrollPct(){ try{ const h=document.documentElement.scrollHeight-window.innerHeight; return h>4 ? Math.round(Math.min(1,Math.max(0,window.scrollY/h))*100) : 0; }catch(e){ return 0; } }
 
+// ── real-interaction tracking: distinguishes "actively studying" from "tab open but idle" ──
+let _lastActive = Date.now();
+function _markActive(){ _lastActive = Date.now(); }
+(function(){
+  let mt=0;
+  // mousemove is throttled (≤ every 2s) so it stays cheap
+  window.addEventListener('mousemove', function(){ const n=Date.now(); if(n-mt>2000){ mt=n; _markActive(); } }, { passive:true });
+  ['keydown','mousedown','click','wheel','scroll','touchstart','touchmove'].forEach(function(ev){
+    window.addEventListener(ev, _markActive, { passive:true });
+  });
+})();
+
 let _lastNav='';
 function touchPresence(){
   try{
     if(typeof syncCode==='undefined' || !syncCode) return;
     const loc = currentLocation();
-    _post('presence', { code: syncCode, last_seen: new Date().toISOString(), view: loc.view, detail: loc.detail, scroll: _scrollPct() });
+    _post('presence', { code: syncCode, last_seen: new Date().toISOString(), last_active: new Date(_lastActive).toISOString(), view: loc.view, detail: loc.detail, scroll: _scrollPct() });
     // record a nav event whenever the screen/chapter changes (timeline history)
     const label = loc.view + (loc.detail ? ' · '+loc.detail : '');
     if(label && label.indexOf('Accueil')!==0 && label !== _lastNav){ _lastNav = label; _post('events', { code: syncCode, type:'nav', ref: label }); }

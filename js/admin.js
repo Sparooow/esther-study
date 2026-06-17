@@ -70,7 +70,7 @@ async function loadTotals(){
 function renderOnly(){ render(); }   // re-render from cached data (online aging), no fetch
 function tick(){
   Promise.all([
-    fetch(SB_URL+'/rest/v1/presence?select=code,last_seen,view,detail,scroll',{headers:H}).then(r=>r.json()).catch(()=>[]),
+    fetch(SB_URL+'/rest/v1/presence?select=code,last_seen,last_active,view,detail,scroll',{headers:H}).then(r=>r.json()).catch(()=>[]),
     fetch(SB_URL+'/rest/v1/progress?select=code,data,updated_at',{headers:H}).then(r=>r.json()).catch(()=>[]),
     fetch(SB_URL+'/rest/v1/events?select=code,ts,type,subject,ref,ok,meta&order=ts.desc&limit=3000',{headers:H}).then(r=>r.json()).catch(()=>[])
   ]).then(([presence,progress,events])=>{
@@ -87,6 +87,16 @@ function lastSeenOf(code){
   return ts.length ? Math.max(...ts) : 0;
 }
 const isOnline = code => Date.now() - lastSeenOf(code) < 90000;
+function durStr(ms){ const s=Math.floor(ms/1000); if(s<60) return s+'s'; if(s<3600) return Math.floor(s/60)+' min'; return Math.floor(s/3600)+' h'; }
+// active = tab open AND a real interaction (mouse/clavier/scroll) in the last 60s
+function activity(code){
+  if(!isOnline(code)) return { state:'offline', label:'hors ligne', dot:'off' };
+  const p = presenceOf(code);
+  const la = p && p.last_active ? new Date(p.last_active).getTime() : lastSeenOf(code);
+  const idle = Date.now() - la;
+  if(idle < 60000) return { state:'active', label:'active', dot:'on', idle:idle };
+  return { state:'idle', label:'inactive depuis '+durStr(idle), dot:'idle', idle:idle };
+}
 
 function render(){
   // union of codes seen anywhere
@@ -111,11 +121,11 @@ function render(){
     const tot = TOTALS.mac+TOTALS.omi+TOTALS.pm;
     const todayN = lastData.events.filter(e=>e.code===code && dayKey(e.ts)===today && e.type==='answer').length;
     const totN = lastData.events.filter(e=>e.code===code && e.type==='answer').length;
-    const on = isOnline(code);
+    const act = activity(code);
     const ls = lastSeenOf(code);
     return `<tr class="urow ${SELECTED===code?'sel':''}" onclick="selectUser('${esc(code)}')">
       <td><strong>${esc(code)}</strong></td>
-      <td><span class="dot ${on?'on':'off'}"></span>${on?'en ligne':'hors ligne'}</td>
+      <td><span class="dot ${act.dot}"></span>${act.label}</td>
       <td class="muted">${ls?ago(ls):'—'}</td>
       <td>Niv. ${level(xp)} · ${xp} XP</td>
       <td>${mast}/${tot}</td>
@@ -134,8 +144,9 @@ function renderLiveNow(codes){
   const el = document.getElementById('liveNow');
   if(!online.length){ el.innerHTML=''; return; }
   el.innerHTML = '<div class="lnow"><div style="font-weight:700;margin-bottom:4px"><span class="live"></span>En ce moment</div>' +
-    online.map(code=>{ const p=presenceOf(code)||{}; const sc=(p.scroll!=null?p.scroll:0);
-      return `<div class="row"><strong>${esc(code)}</strong> est sur <span class="where">${locStr(p)||'—'}</span>
+    online.map(code=>{ const p=presenceOf(code)||{}; const sc=(p.scroll!=null?p.scroll:0); const a=activity(code);
+      const badge = a.state==='active' ? '<span style="color:var(--ok);font-weight:600">● active</span>' : '<span style="color:var(--warn);font-weight:600">● '+a.label+'</span>';
+      return `<div class="row"><strong>${esc(code)}</strong> est sur <span class="where">${locStr(p)||'—'}</span> ${badge}
         <div class="sbar" title="défilement ${sc}%"><i style="width:${sc}%"></i></div><span class="muted">défilé ${sc}%</span></div>`;
     }).join('') + '</div>';
 }
@@ -183,7 +194,11 @@ function detailHtml(code){
   }).join('') || '<div class="muted" style="padding:10px">Aucune action enregistrée encore.</div>';
 
   const p = presenceOf(code);
-  const nowBox = (p && p.view && isOnline(code)) ? `<div class="nowbox"><div class="muted" style="font-size:.78rem"><span class="live"></span>EN CE MOMENT</div><div class="big">${locStr(p)}</div><div class="sbar" style="max-width:100%;margin-top:8px"><i style="width:${p.scroll||0}%"></i></div><div class="muted" style="font-size:.76rem;margin-top:3px">défilement ${p.scroll||0}% · vu ${ago(p.last_seen)}</div></div>` : '';
+  const a = activity(code);
+  const actLine = a.state==='active'
+    ? '<span style="color:var(--ok);font-weight:600">● Active</span> — interaction récente'
+    : '<span style="color:var(--warn);font-weight:600">● Inactive</span> — aucun mouvement/scroll/clic depuis <strong>'+durStr(a.idle||0)+'</strong>';
+  const nowBox = (p && p.view && isOnline(code)) ? `<div class="nowbox"><div class="muted" style="font-size:.78rem"><span class="live"></span>EN CE MOMENT</div><div class="big">${locStr(p)}</div><div class="sbar" style="max-width:100%;margin-top:8px"><i style="width:${p.scroll||0}%"></i></div><div style="font-size:.8rem;margin-top:6px">${actLine}</div><div class="muted" style="font-size:.74rem;margin-top:2px">défilement ${p.scroll||0}% · vu ${ago(p.last_seen)}</div></div>` : '';
   return `<div class="section-title">👤 ${esc(code)} <a class="back" style="font-weight:400;font-size:.8rem" onclick="selectUser('${esc(code)}')">✕ fermer</a></div>
   <div class="detail">
     ${nowBox}
